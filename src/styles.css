@@ -55,11 +55,9 @@
 }
 
 html, body, #root {
-  height: 100% !important;
-  width: 100% !important;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
 body {
@@ -73,17 +71,14 @@ body {
 
 body.sn-embedded {
   background: transparent;
-  /* Override any SN-injected spacing on the iframe body */
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
 /* ========================================
    App Shell
    ======================================== */
 .app {
-  position: absolute;
-  inset: 0;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -247,8 +242,6 @@ body.sn-embedded {
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: 100%;
-  width: 100%;
 }
 
 /* gt-main removed: Header + layout + statusbar are direct children of .app */
