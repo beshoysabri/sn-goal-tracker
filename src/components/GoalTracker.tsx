@@ -266,44 +266,43 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   };
 
   return (
-    <div className={`gt-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      {/* Sidebar overlay for mobile */}
-      {sidebarOpen && (
-        <div className="gt-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <GoalSidebar
-        data={data}
-        selectedGoalId={selectedGoalId}
-        onSelectGoal={handleSelectGoal}
+    <>
+      <Header
+        view={view}
+        statusTab={statusTab}
+        onViewChange={setView}
+        onStatusTabChange={setStatusTab}
         onAddGoal={handleOpenNewGoal}
-        onAddLifeArea={handleOpenNewLifeArea}
-        onEditLifeArea={handleEditLifeArea}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        showDetail={showDetail}
       />
+      <div className={`gt-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {sidebarOpen && (
+          <div className="gt-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+        )}
 
-      <div className="gt-main">
-        <Header
-          view={view}
-          statusTab={statusTab}
-          onViewChange={setView}
-          onStatusTabChange={setStatusTab}
+        <GoalSidebar
+          data={data}
+          selectedGoalId={selectedGoalId}
+          onSelectGoal={handleSelectGoal}
           onAddGoal={handleOpenNewGoal}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          showDetail={showDetail}
+          onAddLifeArea={handleOpenNewLifeArea}
+          onEditLifeArea={handleEditLifeArea}
         />
+
         <div className="gt-content">
           {renderView()}
         </div>
-        <div className="gt-statusbar">
-          <span>{stats.activeCount} active</span>
-          <span>{stats.completedCount} completed</span>
-          {stats.overdueCount > 0 && (
-            <span className="gt-statusbar-overdue">{stats.overdueCount} overdue</span>
-          )}
-          <span>{stats.avgCompletion}% avg completion</span>
-        </div>
+      </div>
+      <div className="gt-statusbar">
+        <span>{stats.activeCount} active</span>
+        <span>{stats.completedCount} completed</span>
+        {stats.overdueCount > 0 && (
+          <span className="gt-statusbar-overdue">{stats.overdueCount} overdue</span>
+        )}
+        <span>{stats.avgCompletion}% avg completion</span>
       </div>
 
       {/* Modals */}
@@ -347,6 +346,6 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           onCancel={() => setConfirmDeleteArea(null)}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -251,13 +251,7 @@ body.sn-embedded {
   width: 100%;
 }
 
-.gt-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
+/* gt-main removed: Header + layout + statusbar are direct children of .app */
 
 /* ========================================
    Sidebar
