@@ -119,7 +119,7 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
       if (g.archived) return false;
       if (statusTab === 'active' && (g.status === 'completed' || g.status === 'abandoned')) return false;
       if (statusTab === 'completed' && g.status !== 'completed') return false;
-      if (!g.startDate && !g.targetDate) return false;
+      if ((!g.startDate || g.startDate.length < 8) && (!g.targetDate || g.targetDate.length < 8)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return g.name.toLowerCase().includes(q) || g.description.toLowerCase().includes(q);
@@ -132,7 +132,7 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
     let minDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
     let maxDate = new Date(now.getFullYear(), now.getMonth() + 6, 1);
     for (const g of filteredGoals) {
-      if (g.startDate) { const d = fromDateStr(g.startDate); if (d < minDate) minDate = new Date(d.getFullYear(), d.getMonth(), 1); }
+      if (g.startDate && g.startDate.length >= 8) { const d = fromDateStr(g.startDate); if (d < minDate) minDate = new Date(d.getFullYear(), d.getMonth(), 1); }
       if (g.targetDate) { const d = fromDateStr(g.targetDate); if (d > maxDate) maxDate = new Date(d.getFullYear(), d.getMonth() + 1, 1); }
     }
     const sm = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
@@ -168,7 +168,7 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
     const addGoalAndChildren = (g: Goal) => {
       result.push({ goal: g });
       for (const child of getChildren(g.id)) {
-        if (child.startDate || child.targetDate) result.push({ goal: child });
+        if ((child.startDate && child.startDate.length >= 8) || (child.targetDate && child.targetDate.length >= 8)) result.push({ goal: child });
       }
     };
     for (const area of sortedAreas) {
@@ -274,7 +274,7 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
             {rows.map((row, i) => {
               if (row.isGroupHeader) return <div key={`gh-${i}`} className="gt-timeline-label-header" />;
               const goal = row.goal;
-              const start = goal.startDate || goal.createdAt.slice(0, 10);
+              const start = (goal.startDate && goal.startDate.length >= 8) ? goal.startDate : goal.createdAt.slice(0, 10);
               const end = goal.targetDate || toDateStr(new Date(new Date().getFullYear(), 11, 31));
               const x = dateToX(start);
               const endX = dateToX(end);

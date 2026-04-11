@@ -11,8 +11,15 @@ export function toDateStr(date: Date): string {
 }
 
 export function fromDateStr(str: string): Date {
+  if (!str || str.length < 8) return new Date(); // safety fallback
   const [y, m, d] = str.split('-').map(Number);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return new Date();
   return new Date(y, m - 1, d);
+}
+
+/** Check if a date string is valid (non-empty, parseable) */
+export function isValidDate(str?: string): str is string {
+  return !!str && str.length >= 8 && !isNaN(fromDateStr(str).getTime());
 }
 
 export function todayStr(): string {
@@ -43,6 +50,7 @@ export function daysBetween(start: string, end: string): number {
 
 /** Format time remaining as human-readable string */
 export function formatTimeLeft(targetDate: string): { label: string; overdue: boolean } {
+  if (!targetDate || targetDate.length < 8) return { label: '-', overdue: false };
   const today = todayStr();
   const days = daysBetween(today, targetDate);
 
@@ -76,6 +84,7 @@ export function formatTimeLeft(targetDate: string): { label: string; overdue: bo
 
 /** Format a date string for display (e.g. "1 Jan '25") */
 export function formatDateShort(dateStr: string): string {
+  if (!dateStr || dateStr.length < 8) return '-';
   const d = fromDateStr(dateStr);
   const day = d.getDate();
   const month = getShortMonthName(d.getMonth());

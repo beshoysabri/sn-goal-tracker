@@ -18,8 +18,8 @@ export function ProgressChart({ goal }: ProgressChartProps) {
     const entries = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
 
     // Time boundaries from goal dates (not entries)
-    const sd = goal.startDate || entries[0].date;
-    const ed = goal.targetDate || todayStr();
+    const sd = (goal.startDate && goal.startDate.length >= 8) ? goal.startDate : (entries.length > 0 ? entries[0].date : todayStr());
+    const ed = (goal.targetDate && goal.targetDate.length >= 8) ? goal.targetDate : todayStr();
     const startTs = fromDateStr(sd).getTime();
     const endTs = Math.max(fromDateStr(ed).getTime(), Date.now());
     const xDomain: [number, number] = [startTs, endTs];

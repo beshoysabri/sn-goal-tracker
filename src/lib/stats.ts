@@ -18,7 +18,7 @@ export function isOverdue(goal: Goal): boolean {
 
 /** Get number of days a goal has been active */
 export function getDaysActive(goal: Goal): number {
-  const start = goal.startDate || goal.createdAt.slice(0, 10);
+  const start = (goal.startDate && goal.startDate.length >= 8) ? goal.startDate : goal.createdAt.slice(0, 10);
   const end = goal.completedDate || todayStr();
   return Math.max(0, daysBetween(start, end));
 }
