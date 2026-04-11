@@ -3421,43 +3421,130 @@ body.sn-embedded {
   /* iOS input zoom fix */
   .form-input, .form-textarea, .form-select, .form-date { font-size: 16px; }
 
-  /* Enlarge touch targets */
-  .gt-icon-btn { width: 36px; height: 36px; }
-  .modal-close-btn { width: 36px; height: 36px; }
-  .gt-shortcuts-btn { width: 28px; height: 28px; font-size: 12px; }
-  .gt-sidebar-add-btn { min-height: 40px; font-size: 13px; }
-  .icon-picker-btn { width: 36px; height: 36px; }
-  .gt-timeline-nav-btn { width: 36px; height: 36px; }
-  .gt-timeline-scale-btn { padding: 8px 12px; }
+  /* Touch targets — minimum 44px */
+  .gt-icon-btn { width: 44px; height: 44px; }
+  .modal-close-btn { width: 44px; height: 44px; font-size: 18px; }
+  .gt-sidebar-add-btn { min-height: 48px; font-size: 14px; }
+  .icon-picker-btn { width: 44px; height: 44px; }
+  .gt-timeline-scale-btn { padding: 10px 14px; min-height: 44px; }
 
-  /* Header — show hamburger, icon-only view buttons */
+  /* Header — two-row layout: top row = hamburger + title + add, bottom row = tabs + views */
   .gt-hamburger { display: flex; }
   .gt-view-btn-label { display: none; }
-  .gt-view-btn { padding: 6px 8px; }
 
-  /* Header compact — single row with hamburger visible */
   .gt-header {
-    padding: 8px 10px;
-    gap: 6px;
+    padding: 6px 10px;
+    gap: 4px;
+    flex-wrap: wrap;
   }
 
   .gt-header-left {
     display: flex;
     align-items: center;
     gap: 4px;
-    min-width: 0;
+    width: 100%;
+    order: 1;
   }
 
-  .gt-header-center {
-    display: none;
-  }
+  .gt-title-display { flex: 1; min-width: 0; }
+  .gt-title-text { font-size: 14px; }
 
   .gt-header-right {
+    order: 2;
+    margin-left: auto;
+    gap: 4px;
+  }
+
+  /* View toggle sits in header-left after title */
+  .gt-view-toggle {
     margin-left: auto;
   }
 
-  .gt-search-bar {
-    display: none;
+  .gt-view-btn {
+    padding: 8px 12px;
+    min-height: 36px;
+  }
+
+  /* Status tabs — second row */
+  .gt-header-center {
+    display: flex;
+    order: 10;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .gt-status-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  /* Search hidden on mobile (use sidebar or keyboard /) */
+  .gt-search-bar { display: none; }
+
+  /* Hide export/shortcuts icons on mobile to save space */
+  .gt-header-right .gt-icon-btn { display: none; }
+  .gt-header-right .export-menu { display: none; }
+
+  .gt-add-btn {
+    padding: 8px 14px;
+    min-height: 36px;
+    font-size: 13px;
+  }
+
+  /* List rows — proper touch height */
+  .gt-list-row {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  .gt-list-group-header {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .gt-list-header-row {
+    min-height: 36px;
+    padding: 8px 16px;
+  }
+
+  /* Board cards — proper touch size */
+  .gt-board-card {
+    padding: 14px;
+    min-height: 48px;
+  }
+
+  /* Sidebar items — touch friendly */
+  .gt-sidebar-item {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  /* Detail action buttons — larger on mobile */
+  .gt-detail-action-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  .gt-detail-back {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+
+  .gt-detail-status-btn {
+    min-height: 36px;
+    padding: 6px 14px;
+  }
+
+  .gt-detail-task {
+    min-height: 44px;
+    padding: 10px 8px;
+  }
+
+  .gt-detail-task input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
   }
 
   /* Mobile sidebar drawer */
@@ -3563,17 +3650,15 @@ body.sn-embedded {
    Responsive -- Phone
    ======================================== */
 @media (max-width: 480px) {
-  /* View buttons */
-  .gt-view-btn {
-    padding: 6px 6px;
-    font-size: 11px;
-  }
+  /* Keep touch targets at minimum 44px */
+  .gt-view-btn { padding: 8px 10px; min-height: 36px; }
+  .gt-status-tab { padding: 8px 10px; font-size: 11px; min-height: 36px; }
 
-  /* Status tabs compact */
-  .gt-status-tab {
-    padding: 6px 10px;
-    font-size: 11px;
-  }
+  /* Hide search on very small screens to save space */
+  .gt-search-bar { display: none; }
+
+  /* List — single column (name only + start date) */
+  .gt-list-row { min-height: 48px; }
 
   /* Board — single column */
   .gt-board-view {
