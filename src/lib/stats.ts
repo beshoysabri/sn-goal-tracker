@@ -90,29 +90,49 @@ export function getProjectedCompletion(goal: Goal): string | null {
   if (goal.trackingType === 'boolean' || goal.trackingType === 'checklist') return null;
   const target = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
   if (target <= 0) return null;
-  const current = goal.trackingType === 'percentage'
-    ? (goal.progressEntries.length > 0 ? goal.progressEntries[goal.progressEntries.length - 1].value : 0)
-    : (goal.currentValue || 0);
-  if (current >= target) return 'Achieved';
+
+  const sorted = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
+  const current = sorted.length > 0 ? sorted[sorted.length - 1].value : (goal.currentValue || 0);
+
+  // Detect direction: is the target above or below current/start?
+  const goingUp = target > (sorted.length > 0 ? sorted[0].value : current);
+
+  // Check if already achieved
+  if (goingUp && current >= target) return 'Achieved';
+  if (!goingUp && current <= target) return 'Achieved';
+
   const velocity = getProgressVelocity(goal);
-  if (!velocity || velocity.value <= 0) return null;
-  const remaining = target - current;
-  const weeksLeft = remaining / velocity.value;
+  if (!velocity || velocity.value === 0) return null;
+
+  // For going-up goals, velocity must be positive; for going-down, negative
+  if (goingUp && velocity.value <= 0) return null;
+  if (!goingUp && velocity.value >= 0) return null;
+
+  const remaining = Math.abs(target - current);
+  const weeksLeft = remaining / Math.abs(velocity.value);
   const daysLeft = Math.round(weeksLeft * 7);
+  if (daysLeft > 3650) return null; // over 10 years = unrealistic
   const projected = new Date();
   projected.setDate(projected.getDate() + daysLeft);
   return formatDateShort(`${projected.getFullYear()}-${String(projected.getMonth() + 1).padStart(2, '0')}-${String(projected.getDate()).padStart(2, '0')}`);
 }
 
-/** Date with the highest single-entry increase */
+/** Date with the highest single-entry progress (supports both directions) */
 export function getBestProgressDay(goal: Goal): { date: string; increase: number } | null {
   const entries = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
   if (entries.length < 2) return null;
+
+  // Detect direction: is the goal to go up or down?
+  const target = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
+  const goingUp = target >= entries[0].value;
+
   let best = { date: entries[1].date, increase: 0 };
   for (let i = 1; i < entries.length; i++) {
     const diff = entries[i].value - entries[i - 1].value;
-    if (diff > best.increase) {
-      best = { date: entries[i].date, increase: Math.round(diff * 10) / 10 };
+    // For going-up goals, biggest positive diff wins; for going-down, biggest negative diff wins
+    const progress = goingUp ? diff : -diff;
+    if (progress > best.increase) {
+      best = { date: entries[i].date, increase: Math.round(Math.abs(diff) * 10) / 10 };
     }
   }
   return best.increase > 0 ? best : null;
