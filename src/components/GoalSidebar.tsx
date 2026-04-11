@@ -15,6 +15,7 @@ interface GoalSidebarProps {
   onAddLifeArea: () => void;
   onEditLifeArea: (area: LifeArea) => void;
   onReorderAreas: (areas: LifeArea[]) => void;
+  onReorderGoals: (goals: Goal[]) => void;
 }
 
 export function GoalSidebar({
@@ -27,10 +28,12 @@ export function GoalSidebar({
   onAddLifeArea,
   onEditLifeArea,
   onReorderAreas,
+  onReorderGoals,
 }: GoalSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const stats = getTrackerStats(data);
   const dragAreaRef = useRef<string | null>(null);
+  const dragGoalRef = useRef<string | null>(null);
 
   const sortedAreas = [...data.lifeAreas].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -52,11 +55,29 @@ export function GoalSidebar({
     .filter(g => !g.lifeAreaId && !g.archived && !g.parentGoalId)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const renderGoalItem = (goal: Goal, isSubGoal = false) => (
+  const handleGoalDrop = (targetGoalId: string, areaGoals: Goal[]) => {
+    if (!dragGoalRef.current || dragGoalRef.current === targetGoalId) return;
+    const sorted = [...areaGoals];
+    const fromIdx = sorted.findIndex(g => g.id === dragGoalRef.current);
+    const toIdx = sorted.findIndex(g => g.id === targetGoalId);
+    if (fromIdx >= 0 && toIdx >= 0) {
+      const [moved] = sorted.splice(fromIdx, 1);
+      sorted.splice(toIdx, 0, moved);
+      onReorderGoals(sorted.map((g, i) => ({ ...g, sortOrder: i })));
+    }
+    dragGoalRef.current = null;
+  };
+
+  const renderGoalItem = (goal: Goal, isSubGoal = false, siblings?: Goal[]) => (
     <div
       key={goal.id}
       className={`gt-sidebar-item ${isSubGoal ? 'gt-sidebar-subgoal' : ''} ${selectedGoalId === goal.id ? 'selected' : ''} ${goal.status === 'completed' ? 'completed' : ''}`}
+      draggable={!isSubGoal}
       onClick={() => onSelectGoal(goal.id)}
+      onDragStart={() => { dragGoalRef.current = goal.id; }}
+      onDragOver={e => e.preventDefault()}
+      onDrop={() => siblings && handleGoalDrop(goal.id, siblings)}
+      onDragEnd={() => { dragGoalRef.current = null; }}
     >
       <span className="gt-sidebar-icon">
         <GoalIcon name={goal.icon} size={14} />
@@ -139,7 +160,7 @@ export function GoalSidebar({
               </div>
               {!isCollapsed && areaGoals.map(goal => (
                 <div key={goal.id}>
-                  {renderGoalItem(goal)}
+                  {renderGoalItem(goal, false, areaGoals)}
                   {getSubGoals(goal.id).map(sub => renderGoalItem(sub, true))}
                 </div>
               ))}
@@ -160,7 +181,7 @@ export function GoalSidebar({
             </div>
             {!collapsed['__ungrouped'] && ungrouped.map(goal => (
               <div key={goal.id}>
-                {renderGoalItem(goal)}
+                {renderGoalItem(goal, false, ungrouped)}
                 {getSubGoals(goal.id).map(sub => renderGoalItem(sub, true))}
               </div>
             ))}

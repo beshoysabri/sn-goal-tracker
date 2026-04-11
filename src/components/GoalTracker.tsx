@@ -174,6 +174,18 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     onChange({ ...data, lifeAreas: areas });
   }, [data, onChange]);
 
+  const handleReorderGoals = useCallback((reordered: Goal[]) => {
+    const reorderedIds = new Set(reordered.map(g => g.id));
+    const updated = data.goals.map(g => {
+      if (reorderedIds.has(g.id)) {
+        const match = reordered.find(r => r.id === g.id);
+        return match ? { ...g, sortOrder: match.sortOrder } : g;
+      }
+      return g;
+    });
+    onChange({ ...data, goals: updated });
+  }, [data, onChange]);
+
   const handleDeleteLifeArea = useCallback((areaId: string) => {
     onChange({
       ...data,
@@ -383,6 +395,7 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           onAddLifeArea={handleOpenNewLifeArea}
           onEditLifeArea={handleEditLifeArea}
           onReorderAreas={handleReorderAreas}
+          onReorderGoals={handleReorderGoals}
         />
 
         <div className="gt-content">
