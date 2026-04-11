@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import type { Goal, GoalTrackerData, GoalStatus, GoalTask } from '../types/goal.ts';
 import { GoalIcon } from '../lib/icons.tsx';
-import { getGoalCompletion } from '../lib/data.ts';
+import { getGoalCompletion, autoUpdateStatus } from '../lib/data.ts';
 import { getTimeRemaining, getDaysActive, getProgressVelocity, getProjectedCompletion, getBestProgressDay, getProgressStreak } from '../lib/stats.ts';
 import { todayStr, formatDateShort } from '../lib/calendar.ts';
 import { ProgressCircle } from './shared/ProgressCircle.tsx';
@@ -66,15 +66,17 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
   };
 
   const handleToggleTask = (taskId: string) => {
-    onUpdateGoal({
+    const updated = {
       ...goal,
       tasks: goal.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t),
       updatedAt: new Date().toISOString(),
-    });
+    };
+    onUpdateGoal(autoUpdateStatus(updated));
   };
 
   const handleDeleteTask = (taskId: string) => {
-    onUpdateGoal({ ...goal, tasks: goal.tasks.filter(t => t.id !== taskId), updatedAt: new Date().toISOString() });
+    const updated = { ...goal, tasks: goal.tasks.filter(t => t.id !== taskId), updatedAt: new Date().toISOString() };
+    onUpdateGoal(autoUpdateStatus(updated));
   };
 
   const handleSaveNotes = () => {
@@ -85,19 +87,23 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
   const handleAddProgress = () => {
     const value = Number(progressInput);
     if (isNaN(value)) return;
+    let updated: Goal;
     if (goal.trackingType === 'numeric') {
-      onUpdateGoal({
+      updated = {
         ...goal, currentValue: value,
         progressEntries: [...goal.progressEntries, { date: todayStr(), value, note: progressNote || undefined }],
         updatedAt: new Date().toISOString(),
-      });
+      };
     } else if (goal.trackingType === 'percentage') {
-      onUpdateGoal({
+      updated = {
         ...goal,
         progressEntries: [...goal.progressEntries, { date: todayStr(), value: Math.min(100, Math.max(0, value)), note: progressNote || undefined }],
         updatedAt: new Date().toISOString(),
-      });
+      };
+    } else {
+      return;
     }
+    onUpdateGoal(autoUpdateStatus(updated));
     setProgressInput('');
     setProgressNote('');
   };

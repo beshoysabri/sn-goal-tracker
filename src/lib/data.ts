@@ -81,6 +81,35 @@ export function getGoalCompletion(goal: Goal): number {
   }
 }
 
+/** Auto-update goal status based on completion percentage */
+export function autoUpdateStatus(goal: Goal): Goal {
+  const completion = getGoalCompletion(goal);
+  const now = new Date().toISOString();
+
+  // Don't auto-change if manually set to paused or abandoned
+  if (goal.status === 'paused' || goal.status === 'abandoned') return goal;
+
+  if (completion >= 100 && goal.status !== 'completed') {
+    return {
+      ...goal,
+      status: 'completed',
+      completedDate: goal.completedDate || now.slice(0, 10),
+      updatedAt: now,
+    };
+  }
+
+  if (completion < 100 && goal.status === 'completed') {
+    return {
+      ...goal,
+      status: 'active',
+      completedDate: undefined,
+      updatedAt: now,
+    };
+  }
+
+  return goal;
+}
+
 function migrate(data: GoalTrackerData): GoalTrackerData {
   if (!data.version) data.version = 1;
 
