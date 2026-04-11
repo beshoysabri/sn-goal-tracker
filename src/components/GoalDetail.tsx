@@ -3,9 +3,10 @@ import { v4 as uuid } from 'uuid';
 import type { Goal, GoalTrackerData, GoalStatus, GoalTask } from '../types/goal.ts';
 import { GoalIcon } from '../lib/icons.tsx';
 import { getGoalCompletion } from '../lib/data.ts';
-import { getTimeRemaining, getDaysActive } from '../lib/stats.ts';
+import { getTimeRemaining, getDaysActive, getProgressVelocity, getProjectedCompletion, getBestProgressDay, getProgressStreak } from '../lib/stats.ts';
 import { todayStr, formatDateShort } from '../lib/calendar.ts';
 import { ProgressCircle } from './shared/ProgressCircle.tsx';
+import { ProgressChart } from './shared/ProgressChart.tsx';
 import { PriorityBadge } from './shared/PriorityBadge.tsx';
 import { hexToRgba } from '../lib/colors.ts';
 
@@ -223,43 +224,75 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
         </div>
       </div>
 
-      {/* Two-column layout for tasks + notes */}
-      <div className="gt-detail-columns">
-        {/* Left column: Progress + Tasks */}
-        <div className="gt-detail-col">
-          {/* Progress section */}
-          <div className="gt-detail-section">
-            <div className="gt-detail-section-header">
-              <h3>Progress</h3>
-              {goal.trackingType === 'numeric' && (
-                <span className="gt-detail-section-badge">{goal.currentValue ?? 0} / {goal.targetValue} {goal.unit}</span>
-              )}
-            </div>
-            <div className="gt-detail-progress-track">
-              <div className="gt-detail-progress-fill" style={{ width: `${completion}%`, background: goal.color }} />
-            </div>
+      {/* Progress chart (full width, above columns) */}
+      {goal.trackingType !== 'boolean' && (
+        <div className="gt-detail-chart-section">
+          <div className="gt-detail-section-header">
+            <h3>Progress</h3>
+            {goal.trackingType === 'numeric' && (
+              <span className="gt-detail-section-badge">{goal.currentValue ?? 0} / {goal.targetValue} {goal.unit}</span>
+            )}
+          </div>
+          <div className="gt-detail-progress-track">
+            <div className="gt-detail-progress-fill" style={{ width: `${completion}%`, background: goal.color }} />
+          </div>
+          <ProgressChart goal={goal} />
 
-            {(goal.trackingType === 'numeric' || goal.trackingType === 'percentage') && (
-              <div className="gt-detail-progress-update">
-                <input
-                  className="form-input"
-                  type="number"
-                  value={progressInput}
-                  onChange={e => setProgressInput(e.target.value)}
-                  placeholder={goal.trackingType === 'numeric' ? `Current ${goal.unit || 'value'}` : '0-100%'}
-                />
-                <input
-                  className="form-input"
-                  type="text"
-                  value={progressNote}
-                  onChange={e => setProgressNote(e.target.value)}
-                  placeholder="Note (optional)"
-                />
-                <button className="btn-primary btn-sm" onClick={handleAddProgress}>Update</button>
+          {(goal.trackingType === 'numeric' || goal.trackingType === 'percentage') && (
+            <div className="gt-detail-progress-update">
+              <input className="form-input" type="number" value={progressInput}
+                onChange={e => setProgressInput(e.target.value)}
+                placeholder={goal.trackingType === 'numeric' ? `Current ${goal.unit || 'value'}` : '0-100%'} />
+              <input className="form-input" type="text" value={progressNote}
+                onChange={e => setProgressNote(e.target.value)} placeholder="Note (optional)" />
+              <button className="btn-primary btn-sm" onClick={handleAddProgress}>Update</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Insights row */}
+      {(() => {
+        const velocity = getProgressVelocity(goal);
+        const projected = getProjectedCompletion(goal);
+        const bestDay = getBestProgressDay(goal);
+        const streak = getProgressStreak(goal);
+        const hasInsights = velocity || projected || bestDay || streak > 0;
+        if (!hasInsights) return null;
+        return (
+          <div className="gt-detail-insights">
+            {velocity && (
+              <div className="gt-insight-card">
+                <span className="gt-insight-icon">&#x1F4C8;</span>
+                <div><div className="gt-insight-value">{velocity.label}</div><div className="gt-insight-label">Velocity</div></div>
+              </div>
+            )}
+            {projected && (
+              <div className="gt-insight-card">
+                <span className="gt-insight-icon">&#x1F3AF;</span>
+                <div><div className="gt-insight-value">{projected}</div><div className="gt-insight-label">Est. completion</div></div>
+              </div>
+            )}
+            {bestDay && (
+              <div className="gt-insight-card">
+                <span className="gt-insight-icon">&#x2B50;</span>
+                <div><div className="gt-insight-value">+{bestDay.increase}</div><div className="gt-insight-label">Best day ({formatDateShort(bestDay.date)})</div></div>
+              </div>
+            )}
+            {streak > 0 && (
+              <div className="gt-insight-card">
+                <span className="gt-insight-icon">&#x1F525;</span>
+                <div><div className="gt-insight-value">{streak} day{streak > 1 ? 's' : ''}</div><div className="gt-insight-label">Progress streak</div></div>
               </div>
             )}
           </div>
+        );
+      })()}
 
+      {/* Two-column layout for tasks + notes */}
+      <div className="gt-detail-columns">
+        {/* Left column: Tasks */}
+        <div className="gt-detail-col">
           {/* Tasks section */}
           <div className="gt-detail-section">
             <div className="gt-detail-section-header">
