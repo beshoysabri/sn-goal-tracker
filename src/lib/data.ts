@@ -86,12 +86,13 @@ export function getGoalCompletion(goal: Goal): number {
  *
  * Two modes:
  * 1. Manual status change (newStatus provided):
- *    - Sets status and normalizes progress data to match
- *    - "completed" → sets progress to 100% for all tracking types
- *    - Other statuses → just set status, leave progress as-is
+ *    - "completed" → sets progress to 100%
+ *    - "active" (from completed) → resets progress to 0
+ *    - "paused"/"abandoned" → just set status
  *
  * 2. Progress data change (no newStatus):
- *    - Checks if completion reached 100% and auto-completes if active
+ *    - 100% → auto-complete (if active)
+ *    - < 100% → auto-revert to active (if was completed)
  */
 export function syncGoalProgress(goal: Goal, newStatus?: GoalStatus): Goal {
   const now = new Date().toISOString();
@@ -99,12 +100,12 @@ export function syncGoalProgress(goal: Goal, newStatus?: GoalStatus): Goal {
 
   // MODE 1: Manual status change
   if (newStatus !== undefined) {
-    let updated = { ...goal, status: newStatus, updatedAt: now };
+    const updated = { ...goal, status: newStatus, updatedAt: now } as Goal;
 
     if (newStatus === 'completed') {
       updated.completedDate = today;
 
-      // Normalize progress to 100% based on tracking type
+      // Normalize progress to 100%
       switch (goal.trackingType) {
         case 'percentage': {
           const latest = goal.progressEntries.length > 0
@@ -126,23 +127,55 @@ export function syncGoalProgress(goal: Goal, newStatus?: GoalStatus): Goal {
           break;
         }
         case 'boolean':
-          // getGoalCompletion reads status directly — no data change needed
+          break;
+      }
+    } else if (newStatus === 'active' && goal.status === 'completed') {
+      // Reverting from completed → reset progress
+      updated.completedDate = undefined;
+      switch (goal.trackingType) {
+        case 'percentage': {
+          updated.progressEntries = [...goal.progressEntries, { date: today, value: 0 }];
+          break;
+        }
+        case 'numeric': {
+          updated.currentValue = 0;
+          updated.progressEntries = [...goal.progressEntries, { date: today, value: 0 }];
+          break;
+        }
+        case 'checklist': {
+          updated.tasks = goal.tasks.map(t => t.completed ? { ...t, completed: false } : t);
+          break;
+        }
+        case 'boolean':
           break;
       }
     } else {
+      // paused, abandoned
       updated.completedDate = undefined;
     }
 
     return updated;
   }
 
-  // MODE 2: Progress data changed — check for auto-completion
+  // MODE 2: Progress data changed — auto-sync status
   const completion = getGoalCompletion(goal);
+
+  // Auto-complete when reaching 100%
   if (completion >= 100 && goal.status === 'active') {
     return {
       ...goal,
       status: 'completed',
       completedDate: today,
+      updatedAt: now,
+    };
+  }
+
+  // Auto-revert when dropping below 100% (only if was auto-completed)
+  if (completion < 100 && goal.status === 'completed') {
+    return {
+      ...goal,
+      status: 'active',
+      completedDate: undefined,
       updatedAt: now,
     };
   }
