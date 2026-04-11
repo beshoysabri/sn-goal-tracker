@@ -24,7 +24,24 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
   const [name, setName] = useState(goal?.name || '');
   const [description, setDescription] = useState(goal?.description || '');
   const [icon, setIcon] = useState(goal?.icon || DEFAULT_ICON);
-  const [color, setColor] = useState(goal?.color || DEFAULT_GOAL_COLOR);
+
+  // Inherit color: parent goal > life area > default
+  const inferredColor = (() => {
+    if (goal?.color) return goal.color;
+    const parentId = defaultParentGoalId;
+    if (parentId) {
+      const parent = goals.find(g => g.id === parentId);
+      if (parent?.color) return parent.color;
+    }
+    const areaId = defaultLifeAreaId;
+    if (areaId) {
+      const area = lifeAreas.find(a => a.id === areaId);
+      if (area?.color) return area.color;
+    }
+    return DEFAULT_GOAL_COLOR;
+  })();
+
+  const [color, setColor] = useState(inferredColor);
   const [lifeAreaId, setLifeAreaId] = useState(goal?.lifeAreaId || defaultLifeAreaId || '');
   const [parentGoalId, setParentGoalId] = useState(goal?.parentGoalId || defaultParentGoalId || '');
   const [trackingType, setTrackingType] = useState<TrackingType>(goal?.trackingType || 'checklist');
@@ -140,7 +157,15 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
       <div className="form-row">
         <div className="form-group form-group-half">
           <label>Life Area</label>
-          <select className="form-select" value={lifeAreaId} onChange={e => { setLifeAreaId(e.target.value); setParentGoalId(''); }}>
+          <select className="form-select" value={lifeAreaId} onChange={e => {
+            const newAreaId = e.target.value;
+            setLifeAreaId(newAreaId);
+            setParentGoalId('');
+            if (!isEdit) {
+              const area = lifeAreas.find(a => a.id === newAreaId);
+              if (area) setColor(area.color);
+            }
+          }}>
             <option value="">None</option>
             {lifeAreas.map(a => (
               <option key={a.id} value={a.id}>{a.name}</option>
@@ -149,7 +174,14 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
         </div>
         <div className="form-group form-group-half">
           <label>Parent Goal</label>
-          <select className="form-select" value={parentGoalId} onChange={e => setParentGoalId(e.target.value)}>
+          <select className="form-select" value={parentGoalId} onChange={e => {
+            const newParentId = e.target.value;
+            setParentGoalId(newParentId);
+            if (!isEdit && newParentId) {
+              const parent = goals.find(g => g.id === newParentId);
+              if (parent) setColor(parent.color);
+            }
+          }}>
             <option value="">None (top-level)</option>
             {parentCandidates.map(g => (
               <option key={g.id} value={g.id}>{g.name}</option>
