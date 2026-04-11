@@ -13,6 +13,7 @@ import { ShortcutsHelp } from './shared/ShortcutsHelp.tsx';
 import { ListView } from './views/ListView.tsx';
 import { TimelineView } from './views/TimelineView.tsx';
 import { BoardView } from './views/BoardView.tsx';
+import { InsightsView } from './views/InsightsView.tsx';
 
 interface GoalTrackerProps {
   data: GoalTrackerData;
@@ -240,6 +241,7 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
         case '1': setView('list'); break;
         case '2': setView('timeline'); break;
         case '3': setView('board'); break;
+        case '4': setView('insights'); break;
         case 'n': case 'N': handleOpenNewGoal(); break;
         case 'a': case 'A':
           setStatusTab(prev => prev === 'active' ? 'completed' : prev === 'completed' ? 'all' : 'active');
@@ -338,6 +340,13 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
             searchQuery={searchQuery}
             onSelectGoal={handleOpenGoalDetail}
             onUpdateStatus={handleUpdateStatus}
+          />
+        );
+      case 'insights':
+        return (
+          <InsightsView
+            data={data}
+            onSelectGoal={handleOpenGoalDetail}
           />
         );
     }

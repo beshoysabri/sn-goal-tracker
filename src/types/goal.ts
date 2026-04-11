@@ -67,7 +67,7 @@ export interface Goal {
 export type GoalStatus = 'active' | 'completed' | 'paused' | 'abandoned';
 export type GoalPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TrackingType = 'boolean' | 'percentage' | 'numeric' | 'checklist';
-export type ViewType = 'list' | 'timeline' | 'board';
+export type ViewType = 'list' | 'timeline' | 'board' | 'insights';
 export type TimeScale = 'M' | 'Q' | 'Y' | '5Y';
 export type StatusTab = 'active' | 'completed' | 'all';
 
