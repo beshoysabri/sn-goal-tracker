@@ -3,9 +3,9 @@
   "name": "Goal Tracker",
   "content_type": "SN|Component",
   "area": "editor-editor",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "A modern goal tracker with list, timeline, and board views. Track goals by life area with progress, deadlines, and sub-tasks. Dark-first, theme-aware.",
-  "url": "https://beshoysabri.github.io/sn-goal-tracker/index.html?v=1.3.0",
+  "url": "https://beshoysabri.github.io/sn-goal-tracker/index.html?v=2.0.0",
   "latest_url": "https://beshoysabri.github.io/sn-goal-tracker/ext.json",
   "marketing_url": "https://github.com/beshoysabri/sn-goal-tracker"
 }
