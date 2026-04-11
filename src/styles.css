@@ -379,15 +379,31 @@ body.sn-embedded {
   min-width: 0;
 }
 
+.gt-sidebar-drag-handle {
+  cursor: grab;
+  color: var(--gt-border);
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity var(--gt-transition);
+  flex-shrink: 0;
+}
+
+.gt-sidebar-section-header:hover .gt-sidebar-drag-handle {
+  opacity: 0.6;
+}
+
 .gt-sidebar-section-edit {
   border: none;
   background: transparent;
   color: var(--gt-muted);
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   padding: 0 4px;
   opacity: 0;
   transition: opacity var(--gt-transition);
+  letter-spacing: 1px;
 }
 
 .gt-sidebar-section-header:hover .gt-sidebar-section-edit {
@@ -680,6 +696,66 @@ body.sn-embedded {
 /* Hamburger menu button — hidden on desktop, shown on mobile */
 .gt-hamburger {
   display: none;
+}
+
+/* Page title display */
+.gt-title-display {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: default;
+  min-width: 0;
+}
+
+.gt-title-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gt-fg);
+  white-space: nowrap;
+}
+
+.gt-subtitle-text {
+  font-size: 12px;
+  color: var(--gt-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gt-title-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.gt-title-input {
+  padding: 3px 8px;
+  background: var(--gt-card-hover);
+  border: 1px solid var(--gt-border);
+  border-radius: var(--gt-radius-xs);
+  color: var(--gt-fg);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  width: 160px;
+}
+
+.gt-subtitle-input {
+  padding: 3px 8px;
+  background: var(--gt-card-hover);
+  border: 1px solid var(--gt-border);
+  border-radius: var(--gt-radius-xs);
+  color: var(--gt-muted);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  width: 140px;
+}
+
+.gt-title-input:focus, .gt-subtitle-input:focus {
+  border-color: var(--gt-accent);
 }
 
 /* View button label — shown on desktop, hidden on mobile */

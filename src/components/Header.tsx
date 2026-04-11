@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { ViewType, StatusTab, GoalTrackerData } from '../types/goal.ts';
 import { ExportMenu } from './shared/ExportMenu.tsx';
 
@@ -11,6 +11,7 @@ interface HeaderProps {
   onAddGoal: () => void;
   onToggleSidebar: () => void;
   onShowShortcuts: () => void;
+  onUpdateTitle: (title: string, subtitle: string) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   showDetail?: boolean;
@@ -56,10 +57,22 @@ export function Header({
   onAddGoal,
   onToggleSidebar,
   onShowShortcuts,
+  onUpdateTitle,
   searchQuery,
   onSearchChange,
   showDetail,
 }: HeaderProps) {
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(data.title || '');
+  const [subtitleDraft, setSubtitleDraft] = useState(data.subtitle || '');
+
+  const handleSaveTitle = () => {
+    onUpdateTitle(titleDraft.trim(), subtitleDraft.trim());
+    setEditingTitle(false);
+  };
+
+  const displayTitle = data.title || 'My Goals';
+
   return (
     <div className="gt-header">
       <div className="gt-header-left">
@@ -68,7 +81,32 @@ export function Header({
             <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        {!showDetail && (
+        {editingTitle ? (
+          <div className="gt-title-edit">
+            <input
+              className="gt-title-input"
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              placeholder="Page title"
+              autoFocus
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveTitle(); if (e.key === 'Escape') setEditingTitle(false); }}
+            />
+            <input
+              className="gt-subtitle-input"
+              value={subtitleDraft}
+              onChange={e => setSubtitleDraft(e.target.value)}
+              placeholder="Subtitle (optional)"
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveTitle(); if (e.key === 'Escape') setEditingTitle(false); }}
+            />
+            <button className="btn-primary btn-sm" onClick={handleSaveTitle}>Save</button>
+          </div>
+        ) : (
+          <div className="gt-title-display" onDoubleClick={() => { setTitleDraft(data.title || ''); setSubtitleDraft(data.subtitle || ''); setEditingTitle(true); }}>
+            <span className="gt-title-text">{displayTitle}</span>
+            {data.subtitle && <span className="gt-subtitle-text">{data.subtitle}</span>}
+          </div>
+        )}
+        {!showDetail && !editingTitle && (
           <div className="gt-view-toggle">
             {VIEW_ICONS.map(v => (
               <button

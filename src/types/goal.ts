@@ -2,6 +2,8 @@
 
 export interface GoalTrackerData {
   version: number;
+  title?: string;
+  subtitle?: string;
   goals: Goal[];
   lifeAreas: LifeArea[];
   createdAt: string;

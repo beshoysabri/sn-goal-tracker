@@ -92,12 +92,19 @@ function migrate(data: GoalTrackerData): GoalTrackerData {
     data.version = 2;
   }
 
+  // v2 -> v3: add title/subtitle fields
+  if (data.version === 2) {
+    if (!data.title) data.title = undefined;
+    if (!data.subtitle) data.subtitle = undefined;
+    data.version = 3;
+  }
+
   return data;
 }
 
 export function createEmpty(lifeAreas: LifeArea[]): GoalTrackerData {
   return {
-    version: 2,
+    version: 3,
     goals: [],
     lifeAreas,
     createdAt: new Date().toISOString(),

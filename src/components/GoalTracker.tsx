@@ -162,6 +162,10 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     setEditingLifeArea(undefined);
   }, [data, onChange]);
 
+  const handleUpdateTitle = useCallback((title: string, subtitle: string) => {
+    onChange({ ...data, title: title || undefined, subtitle: subtitle || undefined });
+  }, [data, onChange]);
+
   const handleReorderAreas = useCallback((areas: LifeArea[]) => {
     onChange({ ...data, lifeAreas: areas });
   }, [data, onChange]);
@@ -339,6 +343,7 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
         onAddGoal={handleOpenNewGoal}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         onShowShortcuts={() => setShowShortcuts(true)}
+        onUpdateTitle={handleUpdateTitle}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         showDetail={showDetail}

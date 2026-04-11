@@ -113,16 +113,21 @@ export function GoalSidebar({
                 }}
                 onDragEnd={() => { dragAreaRef.current = null; }}
               >
+                <span className="gt-sidebar-drag-handle" title="Drag to reorder">&#x2807;</span>
                 <span className="gt-sidebar-section-dot" style={{ background: area.color }} />
-                <span className="gt-sidebar-section-icon" style={{ color: area.color }}>
-                  <GoalIcon name={area.icon} size={12} />
-                </span>
                 <span className="gt-sidebar-section-name">{area.name}</span>
                 <span className="gt-sidebar-section-count"
                   style={{ background: hexToRgba(area.color, 0.15), color: area.color }}
                 >
                   {areaGoals.length}
                 </span>
+                <button
+                  className="gt-sidebar-section-edit"
+                  onClick={(e) => { e.stopPropagation(); onEditLifeArea(area); }}
+                  title="Edit life area"
+                >
+                  &#x22EF;
+                </button>
                 <span
                   className={`gt-sidebar-section-arrow ${isCollapsed ? 'collapsed' : ''}`}
                   onClick={(e) => { e.stopPropagation(); toggleCollapse(area.id); }}
