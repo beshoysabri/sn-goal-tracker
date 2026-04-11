@@ -14,8 +14,15 @@ interface ProgressChartProps {
 export function ProgressChart({ goal }: ProgressChartProps) {
   const color = goal.color || '#32769B';
 
-  const { data, domain, todayTs, targetLine } = useMemo(() => {
+  const { data, yDomain, xDomain, todayTs, targetLine } = useMemo(() => {
     const entries = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
+
+    // Time boundaries from goal dates (not entries)
+    const sd = goal.startDate || entries[0].date;
+    const ed = goal.targetDate || todayStr();
+    const startTs = fromDateStr(sd).getTime();
+    const endTs = Math.max(fromDateStr(ed).getTime(), Date.now());
+    const xDomain: [number, number] = [startTs, endTs];
 
     // Convert entries to chart data
     const data = entries.map(e => ({
@@ -24,6 +31,11 @@ export function ProgressChart({ goal }: ProgressChartProps) {
       date: e.date,
     }));
 
+    // Add start point if first entry is after start date
+    if (data.length > 0 && data[0].ts > startTs) {
+      data.unshift({ ts: startTs, value: data[0].value, date: sd });
+    }
+
     // Value domain
     const tv = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
     const vals = entries.map(e => e.value);
@@ -31,7 +43,7 @@ export function ProgressChart({ goal }: ProgressChartProps) {
     const lo = allVals.length > 0 ? Math.min(...allVals) : 0;
     const hi = allVals.length > 0 ? Math.max(...allVals) : 100;
     const pad = Math.max((hi - lo) * 0.1, 2);
-    const domain: [number, number] = [
+    const yDomain: [number, number] = [
       goal.trackingType === 'percentage' ? 0 : Math.max(0, Math.floor(lo - pad)),
       goal.trackingType === 'percentage' ? 100 : Math.ceil(hi + pad),
     ];
@@ -39,10 +51,8 @@ export function ProgressChart({ goal }: ProgressChartProps) {
     // Target line: from first value to target value
     let targetLine: { startTs: number; startVal: number; endTs: number; endVal: number } | null = null;
     if (tv > 0 && entries.length > 0) {
-      const sd = goal.startDate || entries[0].date;
-      const ed = goal.targetDate || todayStr();
       targetLine = {
-        startTs: fromDateStr(sd).getTime(),
+        startTs,
         startVal: entries[0].value,
         endTs: fromDateStr(ed).getTime(),
         endVal: tv,
@@ -71,10 +81,10 @@ export function ProgressChart({ goal }: ProgressChartProps) {
         }
       }
 
-      return { data: merged, domain, todayTs: Date.now(), targetLine };
+      return { data: merged, yDomain, xDomain, todayTs: Date.now(), targetLine };
     }
 
-    return { data: data.map(d => ({ ...d, target: undefined })), domain, todayTs: Date.now(), targetLine: null };
+    return { data: data.map(d => ({ ...d, target: undefined })), yDomain, xDomain, todayTs: Date.now(), targetLine: null };
   }, [goal]);
 
   if (data.length === 0) {
@@ -104,7 +114,7 @@ export function ProgressChart({ goal }: ProgressChartProps) {
 
           <XAxis
             dataKey="ts" type="number" scale="time"
-            domain={['dataMin', 'dataMax']}
+            domain={xDomain}
             tickFormatter={formatXTick}
             tick={{ fill: '#888', fontSize: 11 }}
             axisLine={{ stroke: '#444' }}
@@ -112,7 +122,7 @@ export function ProgressChart({ goal }: ProgressChartProps) {
           />
 
           <YAxis
-            domain={domain}
+            domain={yDomain}
             tick={{ fill: '#888', fontSize: 11 }}
             axisLine={{ stroke: '#444' }}
             tickLine={{ stroke: '#444' }}
