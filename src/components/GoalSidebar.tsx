@@ -113,6 +113,7 @@ export function GoalSidebar({
             <div key={area.id} className="gt-sidebar-section">
               <div
                 className={`gt-sidebar-section-header ${filterAreaId === area.id ? 'filtered' : ''}`}
+                style={{ background: hexToRgba(area.color, 0.08) }}
                 draggable
                 onClick={() => onFilterByArea(area.id)}
                 onDoubleClick={() => toggleCollapse(area.id)}
