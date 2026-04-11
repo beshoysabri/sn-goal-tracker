@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { v4 as uuid } from 'uuid';
 import type { GoalTrackerData, Goal, LifeArea, ViewType, StatusTab, TimeScale, GoalStatus } from '../types/goal.ts';
 import { todayStr } from '../lib/calendar.ts';
 import { getTrackerStats } from '../lib/stats.ts';
@@ -108,6 +109,27 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     });
   }, [data, onChange]);
 
+  const handleDuplicateGoal = useCallback(() => {
+    if (!selectedGoal) return;
+    const now = new Date().toISOString();
+    const dupe: Goal = {
+      ...selectedGoal,
+      id: uuid(),
+      name: `${selectedGoal.name} (copy)`,
+      status: 'active',
+      completedDate: undefined,
+      currentValue: selectedGoal.trackingType === 'numeric' ? 0 : undefined,
+      tasks: selectedGoal.tasks.map(t => ({ ...t, id: uuid(), completed: false })),
+      progressEntries: [],
+      notes: selectedGoal.notes,
+      sortOrder: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    onChange({ ...data, goals: [...data.goals, dupe] });
+    setSelectedGoalId(dupe.id);
+  }, [selectedGoal, data, onChange]);
+
   // Life Area CRUD
   const handleSaveLifeArea = useCallback((area: LifeArea) => {
     const exists = data.lifeAreas.some(a => a.id === area.id);
@@ -117,6 +139,10 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     onChange({ ...data, lifeAreas: newAreas });
     setShowLifeAreaModal(false);
     setEditingLifeArea(undefined);
+  }, [data, onChange]);
+
+  const handleReorderAreas = useCallback((areas: LifeArea[]) => {
+    onChange({ ...data, lifeAreas: areas });
   }, [data, onChange]);
 
   const handleDeleteLifeArea = useCallback((areaId: string) => {
@@ -230,6 +256,7 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           data={data}
           onBack={() => setShowDetail(false)}
           onEdit={handleOpenEditGoal}
+          onDuplicate={handleDuplicateGoal}
           onDelete={() => setConfirmDeleteGoal(selectedGoal.id)}
           onArchive={() => handleArchiveGoal(selectedGoal.id)}
           onUpdateGoal={handleUpdateGoal}
@@ -298,6 +325,7 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           onAddGoal={handleOpenNewGoal}
           onAddLifeArea={handleOpenNewLifeArea}
           onEditLifeArea={handleEditLifeArea}
+          onReorderAreas={handleReorderAreas}
         />
 
         <div className="gt-content">

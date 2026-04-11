@@ -2005,6 +2005,49 @@ body.sn-embedded {
   .gt-detail-action-btn span { display: none; }
 }
 
+/* Completion celebration overlay */
+.gt-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+  pointer-events: none;
+}
+
+.gt-celebration-content {
+  text-align: center;
+  animation: celebratePop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gt-celebration-emoji {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.gt-celebration-content h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.gt-celebration-content p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes celebratePop {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* ========================================
    Modal System
    ======================================== */

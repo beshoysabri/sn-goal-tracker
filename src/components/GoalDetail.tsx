@@ -16,6 +16,7 @@ interface GoalDetailProps {
   onEdit: () => void;
   onDelete: () => void;
   onArchive: () => void;
+  onDuplicate: () => void;
   onUpdateGoal: (updated: Goal) => void;
 }
 
@@ -26,12 +27,13 @@ const STATUS_OPTIONS: { value: GoalStatus; label: string; color: string }[] = [
   { value: 'abandoned', label: 'Abandoned', color: 'var(--gt-muted)' },
 ];
 
-export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, onUpdateGoal }: GoalDetailProps) {
+export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, onDuplicate, onUpdateGoal }: GoalDetailProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [progressInput, setProgressInput] = useState('');
   const [progressNote, setProgressNote] = useState('');
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(goal.notes || '');
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const completion = getGoalCompletion(goal);
   const timeLeft = goal.targetDate ? getTimeRemaining(goal) : null;
@@ -43,8 +45,13 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
 
   const handleStatusChange = (status: GoalStatus) => {
     const updated = { ...goal, status, updatedAt: new Date().toISOString() };
-    if (status === 'completed') updated.completedDate = todayStr();
-    else updated.completedDate = undefined;
+    if (status === 'completed') {
+      updated.completedDate = todayStr();
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2500);
+    } else {
+      updated.completedDate = undefined;
+    }
     onUpdateGoal(updated);
   };
 
@@ -104,6 +111,10 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
           <button className="gt-detail-action-btn" onClick={onEdit}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
             Edit
+          </button>
+          <button className="gt-detail-action-btn" onClick={onDuplicate}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+            Duplicate
           </button>
           <button className="gt-detail-action-btn" onClick={onArchive}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="21 8 21 21 3 21 3 8" /><rect x="1" y="3" width="22" height="5" /></svg>
@@ -348,6 +359,17 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
           )}
         </div>
       </div>
+
+      {/* Completion celebration */}
+      {showCelebration && (
+        <div className="gt-celebration">
+          <div className="gt-celebration-content">
+            <span className="gt-celebration-emoji">&#127881;</span>
+            <h2>Goal Completed!</h2>
+            <p>Congratulations on achieving your goal!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { GoalTrackerData, Goal, LifeArea } from '../types/goal.ts';
 import { GoalIcon } from '../lib/icons.tsx';
 import { getGoalCompletion } from '../lib/data.ts';
@@ -12,6 +12,7 @@ interface GoalSidebarProps {
   onAddGoal: () => void;
   onAddLifeArea: () => void;
   onEditLifeArea: (area: LifeArea) => void;
+  onReorderAreas: (areas: LifeArea[]) => void;
 }
 
 export function GoalSidebar({
@@ -21,9 +22,11 @@ export function GoalSidebar({
   onAddGoal,
   onAddLifeArea,
   onEditLifeArea,
+  onReorderAreas,
 }: GoalSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const stats = getTrackerStats(data);
+  const dragAreaRef = useRef<string | null>(null);
 
   const sortedAreas = [...data.lifeAreas].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -85,8 +88,25 @@ export function GoalSidebar({
             <div key={area.id} className="gt-sidebar-section">
               <div
                 className="gt-sidebar-section-header"
+                draggable
                 onClick={() => toggleCollapse(area.id)}
                 onContextMenu={(e) => { e.preventDefault(); onEditLifeArea(area); }}
+                onDragStart={() => { dragAreaRef.current = area.id; }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragAreaRef.current && dragAreaRef.current !== area.id) {
+                    const sorted = [...sortedAreas];
+                    const fromIdx = sorted.findIndex(a => a.id === dragAreaRef.current);
+                    const toIdx = sorted.findIndex(a => a.id === area.id);
+                    if (fromIdx >= 0 && toIdx >= 0) {
+                      const [moved] = sorted.splice(fromIdx, 1);
+                      sorted.splice(toIdx, 0, moved);
+                      onReorderAreas(sorted.map((a, i) => ({ ...a, sortOrder: i })));
+                    }
+                  }
+                  dragAreaRef.current = null;
+                }}
+                onDragEnd={() => { dragAreaRef.current = null; }}
               >
                 <span className="gt-sidebar-section-dot" style={{ background: area.color }} />
                 <span className="gt-sidebar-section-icon" style={{ color: area.color }}>
