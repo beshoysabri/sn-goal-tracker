@@ -54,7 +54,7 @@ export function GoalSidebar({
       className={`gt-sidebar-item ${isSubGoal ? 'gt-sidebar-subgoal' : ''} ${selectedGoalId === goal.id ? 'selected' : ''} ${goal.status === 'completed' ? 'completed' : ''}`}
       onClick={() => onSelectGoal(goal.id)}
     >
-      <span className="gt-sidebar-icon" style={{ color: goal.color }}>
+      <span className="gt-sidebar-icon">
         <GoalIcon name={goal.icon} size={14} />
       </span>
       <span className="gt-sidebar-name">{goal.name}</span>

@@ -85,6 +85,33 @@ const ICON_RENDERERS: Record<string, () => ReactNode> = {
   inbox: () => <><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></>,
   paw: () => <><ellipse cx="8" cy="6" rx="2" ry="2.5" /><ellipse cx="16" cy="6" rx="2" ry="2.5" /><ellipse cx="5" cy="11" rx="2" ry="2.5" /><ellipse cx="19" cy="11" rx="2" ry="2.5" /><path d="M12 22c-3 0-5-3-5-6 0-2 2-4 5-4s5 2 5 4c0 3-2 6-5 6z" /></>,
   'shopping-bag': () => <><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></>,
+
+  // Travel
+  plane: () => <><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" /></>,
+  map: () => <><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></>,
+  compass: () => <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
+
+  // Education
+  award: () => <><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></>,
+  'bar-chart': () => <><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></>,
+  clipboard: () => <><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /></>,
+  layers: () => <><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></>,
+
+  // Wellness
+  'cross': () => <><path d="M8 2h8v6h6v8h-6v6H8v-6H2V8h6V2z" /></>,
+  'activity': () => <><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></>,
+  'zap': () => <><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></>,
+
+  // Communication
+  'video': () => <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></>,
+  'mic': () => <><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></>,
+  'link': () => <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></>,
+
+  // Spiritual
+  'sunrise': () => <><path d="M17 18a5 5 0 0 0-10 0" /><line x1="12" y1="2" x2="12" y2="9" /><line x1="4.22" y1="10.22" x2="5.64" y2="11.64" /><line x1="1" y1="18" x2="3" y2="18" /><line x1="21" y1="18" x2="23" y2="18" /><line x1="18.36" y1="11.64" x2="19.78" y2="10.22" /><line x1="23" y1="22" x2="1" y2="22" /><polyline points="8 6 12 2 16 6" /></>,
+  'feather': () => <><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" /><line x1="16" y1="8" x2="2" y2="22" /><line x1="17.5" y1="15" x2="9" y2="15" /></>,
+  'eye': () => <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>,
+  'anchor': () => <><circle cx="12" cy="5" r="3" /><line x1="12" y1="22" x2="12" y2="8" /><path d="M5 12H2a10 10 0 0 0 20 0h-3" /></>,
 };
 
 export const ICON_LIST: { name: string; label: string; category: string }[] = [
@@ -147,6 +174,28 @@ export const ICON_LIST: { name: string; label: string; category: string }[] = [
   { name: 'diamond', label: 'Diamond', category: 'Achievement' },
   { name: 'flag', label: 'Flag', category: 'Achievement' },
   { name: 'medal', label: 'Medal', category: 'Achievement' },
+  // Travel
+  { name: 'plane', label: 'Travel', category: 'Travel' },
+  { name: 'map', label: 'Map', category: 'Travel' },
+  { name: 'compass', label: 'Compass', category: 'Travel' },
+  // Education
+  { name: 'award', label: 'Award', category: 'Education' },
+  { name: 'bar-chart', label: 'Chart', category: 'Education' },
+  { name: 'clipboard', label: 'Clipboard', category: 'Education' },
+  { name: 'layers', label: 'Layers', category: 'Education' },
+  // Wellness
+  { name: 'cross', label: 'Health+', category: 'Wellness' },
+  { name: 'activity', label: 'Activity', category: 'Wellness' },
+  { name: 'zap', label: 'Energy', category: 'Wellness' },
+  // Communication
+  { name: 'video', label: 'Video', category: 'Communication' },
+  { name: 'mic', label: 'Mic', category: 'Communication' },
+  { name: 'link', label: 'Link', category: 'Communication' },
+  // Spiritual
+  { name: 'sunrise', label: 'Sunrise', category: 'Spiritual' },
+  { name: 'feather', label: 'Feather', category: 'Spiritual' },
+  { name: 'eye', label: 'Vision', category: 'Spiritual' },
+  { name: 'anchor', label: 'Anchor', category: 'Spiritual' },
   // General
   { name: 'bolt', label: 'Energy', category: 'General' },
   { name: 'sun', label: 'Sun', category: 'General' },
