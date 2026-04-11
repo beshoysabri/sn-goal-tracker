@@ -1,0 +1,9 @@
+{
+  "identifier": "com.beshoysabri.sn-goal-tracker.dev",
+  "name": "Goal Tracker (Dev)",
+  "content_type": "SN|Component",
+  "area": "editor-editor",
+  "version": "1.0.0",
+  "description": "Goal Tracker - Development Version",
+  "url": "http://localhost:5173/index.html"
+}
