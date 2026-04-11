@@ -26,6 +26,10 @@ export function getMonthName(month: number): string {
   ][month];
 }
 
+export function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
 export function getShortMonthName(month: number): string {
   return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month];
 }
