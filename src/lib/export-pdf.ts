@@ -29,12 +29,13 @@ export function exportPdf(data: GoalTrackerData) {
       `${getGoalCompletion(g)}%`,
       timeLeft?.label || '-',
       getTasksLabel(g),
+      (g.notes || '').substring(0, 80),
     ];
   });
 
   (doc as any).autoTable({
     startY: 35,
-    head: [['Goal', 'Life Area', 'Status', 'Progress', 'Time Left', 'Tasks']],
+    head: [['Goal', 'Life Area', 'Status', 'Progress', 'Time Left', 'Tasks', 'Notes']],
     body: tableData,
     styles: { fontSize: 9 },
     headStyles: { fillColor: [99, 102, 241] },

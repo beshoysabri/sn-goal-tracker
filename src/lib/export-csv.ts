@@ -3,7 +3,7 @@ import { getGoalCompletion } from './data.ts';
 import { getTimeRemaining, getTasksLabel } from './stats.ts';
 
 export function exportCSV(data: GoalTrackerData) {
-  const headers = ['Name', 'Life Area', 'Status', 'Priority', 'Tracking', 'Completion %', 'Start Date', 'Target Date', 'Time Left', 'Tasks'];
+  const headers = ['Name', 'Life Area', 'Status', 'Priority', 'Tracking', 'Completion %', 'Start Date', 'Target Date', 'Time Left', 'Tasks', 'Notes'];
   const rows = data.goals
     .filter(g => !g.archived)
     .map(g => {
@@ -20,6 +20,7 @@ export function exportCSV(data: GoalTrackerData) {
         g.targetDate || '',
         timeLeft?.label || '',
         getTasksLabel(g),
+        g.notes || '',
       ];
     });
 

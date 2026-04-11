@@ -8,6 +8,7 @@ import { GoalDetail } from './GoalDetail.tsx';
 import { GoalModal } from './GoalModal.tsx';
 import { LifeAreaModal } from './LifeAreaModal.tsx';
 import { ConfirmDialog } from './shared/ConfirmDialog.tsx';
+import { ShortcutsHelp } from './shared/ShortcutsHelp.tsx';
 import { ListView } from './views/ListView.tsx';
 import { TimelineView } from './views/TimelineView.tsx';
 import { BoardView } from './views/BoardView.tsx';
@@ -34,6 +35,9 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [showLifeAreaModal, setShowLifeAreaModal] = useState(false);
   const [editingLifeArea, setEditingLifeArea] = useState<LifeArea | undefined>(undefined);
+
+  // Help
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Confirm dialogs
   const [confirmDeleteGoal, setConfirmDeleteGoal] = useState<string | null>(null);
@@ -183,8 +187,10 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           e.preventDefault();
           document.querySelector<HTMLInputElement>('.gt-search-input')?.focus();
           break;
+        case '?': setShowShortcuts(s => !s); break;
         case 'Escape':
-          if (showGoalModal) { setShowGoalModal(false); setEditingGoal(undefined); }
+          if (showShortcuts) setShowShortcuts(false);
+          else if (showGoalModal) { setShowGoalModal(false); setEditingGoal(undefined); }
           else if (showLifeAreaModal) { setShowLifeAreaModal(false); setEditingLifeArea(undefined); }
           else if (showDetail) setShowDetail(false);
           break;
@@ -270,10 +276,12 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
       <Header
         view={view}
         statusTab={statusTab}
+        data={data}
         onViewChange={setView}
         onStatusTabChange={setStatusTab}
         onAddGoal={handleOpenNewGoal}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onShowShortcuts={() => setShowShortcuts(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         showDetail={showDetail}
@@ -346,6 +354,8 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           onCancel={() => setConfirmDeleteArea(null)}
         />
       )}
+
+      {showShortcuts && <ShortcutsHelp onClose={() => setShowShortcuts(false)} />}
     </>
   );
 }

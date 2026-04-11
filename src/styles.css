@@ -54,6 +54,17 @@
   padding: 0;
 }
 
+/* Accessibility: visible focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--gt-accent);
+  outline-offset: 2px;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--gt-accent);
+  outline-offset: 1px;
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;

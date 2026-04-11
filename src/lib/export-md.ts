@@ -24,6 +24,13 @@ export function exportMarkdown(data: GoalTrackerData) {
       md += `| ${prefix}${goal.name} | ${goal.status} | ${completion}% | ${timeLeft?.label || '-'} | ${getTasksLabel(goal)} |\n`;
     }
     md += '\n';
+
+    // Add notes for goals that have them
+    for (const goal of goals) {
+      if (goal.notes) {
+        md += `### ${goal.name} - Notes\n\n${goal.notes}\n\n`;
+      }
+    }
   }
 
   md += `---\n*Exported from Goal Tracker on ${new Date().toLocaleDateString()}*\n`;

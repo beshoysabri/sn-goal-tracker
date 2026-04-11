@@ -1,13 +1,16 @@
 import type { ReactNode } from 'react';
-import type { ViewType, StatusTab } from '../types/goal.ts';
+import type { ViewType, StatusTab, GoalTrackerData } from '../types/goal.ts';
+import { ExportMenu } from './shared/ExportMenu.tsx';
 
 interface HeaderProps {
   view: ViewType;
   statusTab: StatusTab;
+  data: GoalTrackerData;
   onViewChange: (view: ViewType) => void;
   onStatusTabChange: (tab: StatusTab) => void;
   onAddGoal: () => void;
   onToggleSidebar: () => void;
+  onShowShortcuts: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   showDetail?: boolean;
@@ -47,10 +50,12 @@ const VIEW_ICONS: { key: ViewType; label: string; icon: ReactNode }[] = [
 export function Header({
   view,
   statusTab,
+  data,
   onViewChange,
   onStatusTabChange,
   onAddGoal,
   onToggleSidebar,
+  onShowShortcuts,
   searchQuery,
   onSearchChange,
   showDetail,
@@ -120,6 +125,10 @@ export function Header({
             />
           </div>
         )}
+        <ExportMenu data={data} />
+        <button className="gt-icon-btn" onClick={onShowShortcuts} title="Keyboard shortcuts (?)">
+          <span style={{ fontSize: 14, fontWeight: 700 }}>?</span>
+        </button>
         <button className="btn-primary gt-add-btn" onClick={onAddGoal}>
           + Goal
         </button>

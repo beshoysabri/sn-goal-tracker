@@ -83,13 +83,21 @@ export function getGoalCompletion(goal: Goal): number {
 
 function migrate(data: GoalTrackerData): GoalTrackerData {
   if (!data.version) data.version = 1;
-  // Future migrations go here
+
+  // v1 -> v2: add notes field to goals
+  if (data.version === 1) {
+    for (const goal of data.goals) {
+      if (goal.notes === undefined) (goal as any).notes = '';
+    }
+    data.version = 2;
+  }
+
   return data;
 }
 
 export function createEmpty(lifeAreas: LifeArea[]): GoalTrackerData {
   return {
-    version: 1,
+    version: 2,
     goals: [],
     lifeAreas,
     createdAt: new Date().toISOString(),
