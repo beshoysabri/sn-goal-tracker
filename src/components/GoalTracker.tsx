@@ -26,10 +26,14 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   const [timeScale, setTimeScale] = useState<TimeScale>('Y');
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filterAreaId, setFilterAreaId] = useState<string | null>(null);
 
   // Selection state
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+
+  // Toast
+  const [toast, setToast] = useState<string | null>(null);
 
   // Modal state
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -51,6 +55,11 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   );
 
   const stats = useMemo(() => getTrackerStats(data), [data]);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  }, []);
 
   // Goal CRUD
   const handleSaveGoal = useCallback((goal: Goal) => {
@@ -109,6 +118,17 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     });
   }, [data, onChange]);
 
+  const handleQuickComplete = useCallback((goalId: string) => {
+    onChange({
+      ...data,
+      goals: data.goals.map(g => {
+        if (g.id !== goalId) return g;
+        return { ...g, status: 'completed' as GoalStatus, completedDate: todayStr(), updatedAt: new Date().toISOString() };
+      }),
+    });
+    showToast('Goal completed!');
+  }, [data, onChange, showToast]);
+
   const handleDuplicateGoal = useCallback(() => {
     if (!selectedGoal) return;
     const now = new Date().toISOString();
@@ -128,7 +148,8 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
     };
     onChange({ ...data, goals: [...data.goals, dupe] });
     setSelectedGoalId(dupe.id);
-  }, [selectedGoal, data, onChange]);
+    showToast('Goal duplicated');
+  }, [selectedGoal, data, onChange, showToast]);
 
   // Life Area CRUD
   const handleSaveLifeArea = useCallback((area: LifeArea) => {
@@ -162,8 +183,15 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   // Navigation
   const handleSelectGoal = useCallback((goalId: string | null) => {
     setSelectedGoalId(goalId);
+    setFilterAreaId(null);
     setShowDetail(false);
     setSidebarOpen(false);
+  }, []);
+
+  const handleFilterByArea = useCallback((areaId: string) => {
+    setFilterAreaId(prev => prev === areaId ? null : areaId);
+    setSelectedGoalId(null);
+    setShowDetail(false);
   }, []);
 
   const handleOpenGoalDetail = useCallback((goalId: string) => {
@@ -271,7 +299,9 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
             data={data}
             statusTab={statusTab}
             searchQuery={searchQuery}
+            filterAreaId={filterAreaId}
             onSelectGoal={handleOpenGoalDetail}
+            onQuickComplete={handleQuickComplete}
           />
         );
       case 'timeline':
@@ -321,7 +351,9 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
         <GoalSidebar
           data={data}
           selectedGoalId={selectedGoalId}
+          filterAreaId={filterAreaId}
           onSelectGoal={handleSelectGoal}
+          onFilterByArea={handleFilterByArea}
           onAddGoal={handleOpenNewGoal}
           onAddLifeArea={handleOpenNewLifeArea}
           onEditLifeArea={handleEditLifeArea}
@@ -384,6 +416,8 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
       )}
 
       {showShortcuts && <ShortcutsHelp onClose={() => setShowShortcuts(false)} />}
+
+      {toast && <div className="gt-toast">{toast}</div>}
     </>
   );
 }

@@ -2715,6 +2715,90 @@ body.sn-embedded {
   font-weight: 600;
 }
 
+/* Toast notification */
+.gt-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gt-fg);
+  color: var(--gt-bg);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 3000;
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  box-shadow: var(--gt-shadow-lg);
+}
+
+@keyframes toastIn {
+  0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* Sortable list headers */
+.gt-list-sort-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: color var(--gt-transition);
+}
+
+.gt-list-sort-header:hover { color: var(--gt-fg); }
+.gt-list-sort-header.active { color: var(--gt-accent); }
+.gt-list-sort-arrow { font-size: 10px; }
+
+/* Quick complete button on list row hover */
+.gt-list-quick-complete {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--gt-success);
+  background: transparent;
+  color: var(--gt-success);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--gt-transition);
+}
+
+.gt-list-row:hover .gt-list-quick-complete { display: flex; }
+.gt-list-quick-complete:hover { background: var(--gt-success); color: #fff; }
+
+/* Empty state suggestions */
+.gt-list-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.gt-list-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--gt-card-hover);
+  border-radius: var(--gt-radius-xs);
+  font-size: 13px;
+  color: var(--gt-muted);
+}
+
+/* Sidebar section filtered state */
+.gt-sidebar-section-header.filtered {
+  background: color-mix(in srgb, var(--gt-accent) 10%, transparent);
+}
+
+.gt-sidebar-section-header.filtered .gt-sidebar-section-name {
+  color: var(--gt-accent);
+}
+
 /* ========================================
    Export Button
    ======================================== */
