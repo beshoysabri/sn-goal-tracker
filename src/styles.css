@@ -2575,6 +2575,16 @@ body.sn-embedded {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid var(--gt-border);
+  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .color-swatch {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuid } from 'uuid';
 import { Modal } from './shared/Modal.tsx';
 import { ColorPicker } from './shared/ColorPicker.tsx';
@@ -24,24 +24,6 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
   const [name, setName] = useState(goal?.name || '');
   const [description, setDescription] = useState(goal?.description || '');
   const [icon, setIcon] = useState(goal?.icon || DEFAULT_ICON);
-
-  // Inherit color: parent goal > life area > default
-  const inferredColor = (() => {
-    if (goal?.color) return goal.color;
-    const parentId = defaultParentGoalId;
-    if (parentId) {
-      const parent = goals.find(g => g.id === parentId);
-      if (parent?.color) return parent.color;
-    }
-    const areaId = defaultLifeAreaId;
-    if (areaId) {
-      const area = lifeAreas.find(a => a.id === areaId);
-      if (area?.color) return area.color;
-    }
-    return DEFAULT_GOAL_COLOR;
-  })();
-
-  const [color, setColor] = useState(inferredColor);
   const [lifeAreaId, setLifeAreaId] = useState(goal?.lifeAreaId || defaultLifeAreaId || '');
   const [parentGoalId, setParentGoalId] = useState(goal?.parentGoalId || defaultParentGoalId || '');
   const [trackingType, setTrackingType] = useState<TrackingType>(goal?.trackingType || 'checklist');
@@ -51,10 +33,36 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
   const [startDate, setStartDate] = useState(goal?.startDate || todayStr());
   const [targetDate, setTargetDate] = useState(goal?.targetDate || '');
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [colorManuallySet, setColorManuallySet] = useState(false);
+
+  // Compute inherited color from parent goal or life area
+  const getInheritedColor = (pId: string, aId: string): string => {
+    if (pId) {
+      const parent = goals.find(g => g.id === pId);
+      if (parent?.color) return parent.color;
+    }
+    if (aId) {
+      const area = lifeAreas.find(a => a.id === aId);
+      if (area?.color) return area.color;
+    }
+    return DEFAULT_GOAL_COLOR;
+  };
+
+  // Initial color: for edits use goal's color, for new goals inherit
+  const [color, setColor] = useState(() => {
+    if (goal?.color) return goal.color;
+    return getInheritedColor(defaultParentGoalId || '', defaultLifeAreaId || '');
+  });
+
+  // Auto-update color when life area or parent changes (only for new goals, only if user hasn't manually picked)
+  useEffect(() => {
+    if (isEdit || colorManuallySet) return;
+    const inherited = getInheritedColor(parentGoalId, lifeAreaId);
+    setColor(inherited);
+  }, [lifeAreaId, parentGoalId, isEdit, colorManuallySet]);
 
   const canSave = name.trim().length > 0;
 
-  // Parent goal candidates: top-level goals in the same life area (excluding self)
   const parentCandidates = goals.filter(g =>
     !g.archived &&
     !g.parentGoalId &&
@@ -97,7 +105,7 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
 
   return (
     <Modal
-      title={isEdit ? 'Edit Goal' : 'New Goal'}
+      title={isEdit ? 'Edit Goal' : parentGoalId ? 'New Sub-goal' : 'New Goal'}
       onClose={onClose}
       footer={
         <>
@@ -115,7 +123,7 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="e.g. Learn Spanish"
+          placeholder={parentGoalId ? 'e.g. Complete Phase 1' : 'e.g. Learn Spanish'}
           autoFocus
         />
       </div>
@@ -149,8 +157,8 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
           )}
         </div>
         <div className="form-group form-group-half">
-          <label>Color</label>
-          <ColorPicker value={color} onChange={setColor} />
+          <label>Color {!isEdit && !colorManuallySet && <span style={{ fontSize: 10, color: 'var(--gt-muted)' }}>(auto)</span>}</label>
+          <ColorPicker value={color} onChange={(c) => { setColor(c); setColorManuallySet(true); }} />
         </div>
       </div>
 
@@ -158,13 +166,8 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
         <div className="form-group form-group-half">
           <label>Life Area</label>
           <select className="form-select" value={lifeAreaId} onChange={e => {
-            const newAreaId = e.target.value;
-            setLifeAreaId(newAreaId);
+            setLifeAreaId(e.target.value);
             setParentGoalId('');
-            if (!isEdit) {
-              const area = lifeAreas.find(a => a.id === newAreaId);
-              if (area) setColor(area.color);
-            }
           }}>
             <option value="">None</option>
             {lifeAreas.map(a => (
@@ -174,14 +177,7 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
         </div>
         <div className="form-group form-group-half">
           <label>Parent Goal</label>
-          <select className="form-select" value={parentGoalId} onChange={e => {
-            const newParentId = e.target.value;
-            setParentGoalId(newParentId);
-            if (!isEdit && newParentId) {
-              const parent = goals.find(g => g.id === newParentId);
-              if (parent) setColor(parent.color);
-            }
-          }}>
+          <select className="form-select" value={parentGoalId} onChange={e => setParentGoalId(e.target.value)}>
             <option value="">None (top-level)</option>
             {parentCandidates.map(g => (
               <option key={g.id} value={g.id}>{g.name}</option>
@@ -260,7 +256,6 @@ export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, default
   );
 }
 
-// Inline wrapper to avoid importing GoalIcon in the form (already have it in scope via icons.tsx)
 import { GoalIcon as GoalIconComponent } from '../lib/icons.tsx';
 function GoalIconInline({ name }: { name: string }) {
   return <GoalIconComponent name={name} size={20} />;
