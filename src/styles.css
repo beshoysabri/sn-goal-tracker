@@ -2207,7 +2207,26 @@ body.sn-embedded {
 .gt-detail-history-row:hover { background: var(--gt-card-hover); }
 .gt-detail-history-date { color: var(--gt-muted); width: 70px; flex-shrink: 0; }
 .gt-detail-history-val { font-weight: 600; color: var(--gt-fg); }
-.gt-detail-history-note { color: var(--gt-muted); font-style: italic; }
+.gt-detail-history-note { color: var(--gt-muted); font-style: italic; flex: 1; min-width: 0; }
+
+.gt-detail-history-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--gt-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: all var(--gt-transition);
+}
+
+.gt-detail-history-row:hover .gt-detail-history-delete { opacity: 1; }
+.gt-detail-history-delete:hover { color: var(--gt-danger); background: color-mix(in srgb, var(--gt-danger) 10%, transparent); }
 
 /* Small button variant */
 .btn-sm { padding: 5px 10px; font-size: 11px; }

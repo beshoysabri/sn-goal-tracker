@@ -359,15 +359,29 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
             <div className="gt-detail-section">
               <div className="gt-detail-section-header"><h3>History</h3></div>
               <div className="gt-detail-history">
-                {[...goal.progressEntries].reverse().slice(0, 15).map((entry, i) => (
-                  <div key={i} className="gt-detail-history-row">
-                    <span className="gt-detail-history-date">{formatDateShort(entry.date)}</span>
-                    <span className="gt-detail-history-val">
-                      {goal.trackingType === 'percentage' ? `${entry.value}%` : `${entry.value} ${goal.unit || ''}`}
-                    </span>
-                    {entry.note && <span className="gt-detail-history-note">{entry.note}</span>}
-                  </div>
-                ))}
+                {[...goal.progressEntries].reverse().slice(0, 15).map((entry, revIdx) => {
+                  // Map reversed index back to original array index
+                  const origIdx = goal.progressEntries.length - 1 - revIdx;
+                  return (
+                    <div key={revIdx} className="gt-detail-history-row">
+                      <span className="gt-detail-history-date">{formatDateShort(entry.date)}</span>
+                      <span className="gt-detail-history-val">
+                        {goal.trackingType === 'percentage' ? `${entry.value}%` : `${entry.value} ${goal.unit || ''}`}
+                      </span>
+                      {entry.note && <span className="gt-detail-history-note">{entry.note}</span>}
+                      <button
+                        className="gt-detail-history-delete"
+                        onClick={() => {
+                          const updated = { ...goal, progressEntries: goal.progressEntries.filter((_, i) => i !== origIdx), updatedAt: new Date().toISOString() };
+                          onUpdateGoal(updated);
+                        }}
+                        title="Remove entry"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
