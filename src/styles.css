@@ -2245,29 +2245,9 @@ body.sn-embedded {
 
 .gt-chart-svg {
   display: block;
+  width: 100%;
+  height: auto;
 }
-
-.gt-chart-tooltip {
-  position: absolute;
-  transform: translateX(-50%) translateY(-100%);
-  background: var(--gt-panel-bg);
-  border: 1px solid var(--gt-border);
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 11px;
-  color: var(--gt-fg);
-  pointer-events: none;
-  z-index: 10;
-  white-space: nowrap;
-  box-shadow: var(--gt-shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.gt-chart-tooltip strong { font-weight: 700; }
-.gt-chart-tooltip span { color: var(--gt-muted); font-size: 10px; }
-.gt-chart-tooltip em { color: var(--gt-muted); font-style: italic; font-size: 10px; }
 
 .gt-chart-empty {
   height: 100px;

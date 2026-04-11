@@ -1,189 +1,150 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import type { Goal } from '../../types/goal.ts';
 import { fromDateStr, todayStr, getShortMonthName } from '../../lib/calendar.ts';
 import { hexToRgba } from '../../lib/colors.ts';
 
 interface ProgressChartProps {
   goal: Goal;
-  height?: number;
 }
 
-export function ProgressChart({ goal, height = 180 }: ProgressChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerW, setContainerW] = useState(600);
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+// Fixed viewBox — SVG scales uniformly to fit container
+const VW = 800;
+const VH = 220;
+const PAD = { top: 20, right: 20, bottom: 36, left: 56 };
+const IW = VW - PAD.left - PAD.right;
+const IH = VH - PAD.top - PAD.bottom;
 
-  // Measure actual container width
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver(entries => {
-      for (const entry of entries) setContainerW(entry.contentRect.width);
-    });
-    obs.observe(el);
-    setContainerW(el.clientWidth);
-    return () => obs.disconnect();
-  }, []);
+export function ProgressChart({ goal }: ProgressChartProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const color = goal.color || '#32769B';
 
-  const PAD = { top: 16, right: 12, bottom: 30, left: 48 };
-  const W = containerW;
-  const H = height;
-  const innerW = W - PAD.left - PAD.right;
-  const innerH = H - PAD.top - PAD.bottom;
-
-  const chartData = useMemo(() => {
+  const chart = useMemo(() => {
     const entries = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
     if (entries.length === 0) return null;
 
     // Time range
-    const startDate = goal.startDate || entries[0].date;
-    const endDate = goal.targetDate || todayStr();
-    const startMs = fromDateStr(startDate).getTime();
-    const endMs = Math.max(fromDateStr(endDate).getTime(), fromDateStr(todayStr()).getTime());
-    const timeSpan = Math.max(endMs - startMs, 86400000);
+    const sd = goal.startDate || entries[0].date;
+    const ed = goal.targetDate || todayStr();
+    const t0 = fromDateStr(sd).getTime();
+    const t1 = Math.max(fromDateStr(ed).getTime(), Date.now());
+    const tSpan = Math.max(t1 - t0, 86400000);
 
-    // Value range
-    const allVals = entries.map(e => e.value);
-    const targetVal = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
-    const dataMin = Math.min(...allVals, targetVal > 0 ? targetVal : Infinity);
-    const dataMax = Math.max(...allVals, targetVal > 0 ? targetVal : 0);
-    const rangePad = Math.max((dataMax - dataMin) * 0.15, 2);
-    const minVal = goal.trackingType === 'percentage' ? 0 : Math.max(0, Math.floor(dataMin - rangePad));
-    const maxVal = goal.trackingType === 'percentage' ? 100 : Math.ceil(dataMax + rangePad);
-    const valRange = maxVal - minVal || 1;
+    // Value range — auto-fit data
+    const vals = entries.map(e => e.value);
+    const tv = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
+    const lo = Math.min(...vals, tv > 0 ? tv : Infinity);
+    const hi = Math.max(...vals, tv > 0 ? tv : 0);
+    const pad = Math.max((hi - lo) * 0.12, 2);
+    const vMin = goal.trackingType === 'percentage' ? 0 : Math.max(0, Math.floor(lo - pad));
+    const vMax = goal.trackingType === 'percentage' ? 100 : Math.ceil(hi + pad);
+    const vSpan = vMax - vMin || 1;
 
-    const valToY = (v: number) => PAD.top + innerH - ((v - minVal) / valRange) * innerH;
-    const timeToX = (ms: number) => PAD.left + ((ms - startMs) / timeSpan) * innerW;
+    const x = (ms: number) => PAD.left + ((ms - t0) / tSpan) * IW;
+    const y = (v: number) => PAD.top + IH - ((v - vMin) / vSpan) * IH;
 
-    // Data points
-    const points = entries.map(e => ({
-      x: timeToX(fromDateStr(e.date).getTime()),
-      y: valToY(e.value),
+    // Points
+    const pts = entries.map(e => ({
+      x: x(fromDateStr(e.date).getTime()), y: y(e.value),
       date: e.date, value: e.value, note: e.note,
     }));
 
-    // Target line
-    const firstVal = entries[0].value;
-    const hasTarget = targetVal > 0;
-    const targetStartY = valToY(firstVal);
-    const targetEndY = hasTarget ? valToY(targetVal) : targetStartY;
-
-    // Today
-    const todayX = timeToX(new Date().getTime());
-
-    // Grid (5 lines)
-    const gridCount = 4;
-    const gridLines = [];
-    for (let i = 0; i <= gridCount; i++) {
-      const frac = i / gridCount;
-      const v = minVal + frac * valRange;
-      gridLines.push({
-        y: valToY(v),
-        label: goal.trackingType === 'percentage' ? `${Math.round(v)}%` : String(Math.round(v)),
-      });
+    // Line + area paths
+    let line = '';
+    let area = '';
+    if (pts.length >= 2) {
+      line = 'M' + pts.map(p => `${p.x} ${p.y}`).join('L');
+      area = line + `L${pts[pts.length - 1].x} ${PAD.top + IH}L${pts[0].x} ${PAD.top + IH}Z`;
     }
 
-    // X-axis month labels
+    // Target line
+    const hasTarget = tv > 0;
+    const tgtY0 = y(entries[0].value);
+    const tgtY1 = hasTarget ? y(tv) : tgtY0;
+
+    // Today
+    const todayX = x(Date.now());
+
+    // Y grid (5 lines)
+    const yGrid = Array.from({ length: 5 }, (_, i) => {
+      const frac = i / 4;
+      const v = vMin + frac * vSpan;
+      return { y: y(v), label: goal.trackingType === 'percentage' ? `${Math.round(v)}%` : String(Math.round(v)) };
+    });
+
+    // X labels (months)
+    const startD = fromDateStr(sd);
+    const months = Math.max(1, Math.round(tSpan / (30.44 * 86400000)));
+    const step = months <= 4 ? 1 : months <= 12 ? 2 : months <= 24 ? 3 : 6;
     const xLabels: { x: number; label: string }[] = [];
-    const sd = fromDateStr(startDate);
-    const monthSpan = Math.max(1, Math.round(timeSpan / (30.44 * 86400000)));
-    const step = monthSpan <= 4 ? 1 : monthSpan <= 12 ? 2 : monthSpan <= 24 ? 3 : 6;
-    for (let m = 0; m <= monthSpan + step; m += step) {
-      const d = new Date(sd.getFullYear(), sd.getMonth() + m, 1);
-      if (d.getTime() > endMs + 86400000 * 45) break;
-      const mx = timeToX(d.getTime());
-      if (mx >= PAD.left && mx <= W - PAD.right) {
+    for (let m = 0; m <= months + step; m += step) {
+      const d = new Date(startD.getFullYear(), startD.getMonth() + m, 1);
+      if (d.getTime() > t1 + 86400000 * 45) break;
+      const px = x(d.getTime());
+      if (px >= PAD.left && px <= VW - PAD.right) {
         const yr = d.getFullYear() !== new Date().getFullYear() ? ` '${String(d.getFullYear()).slice(2)}` : '';
-        xLabels.push({ x: mx, label: getShortMonthName(d.getMonth()) + yr });
+        xLabels.push({ x: px, label: getShortMonthName(d.getMonth()) + yr });
       }
     }
 
-    // SVG paths
-    let linePath = '';
-    let areaPath = '';
-    if (points.length >= 2) {
-      linePath = 'M ' + points.map(p => `${p.x},${p.y}`).join(' L ');
-      areaPath = linePath + ` L ${points[points.length - 1].x},${PAD.top + innerH} L ${points[0].x},${PAD.top + innerH} Z`;
-    }
+    return { pts, line, area, yGrid, xLabels, tgtY0, tgtY1, todayX, hasTarget };
+  }, [goal]);
 
-    return { points, linePath, areaPath, gridLines, xLabels, targetStartY, targetEndY, todayX, hasTarget };
-  }, [goal, W, H, innerW, innerH]);
-
-  if (!chartData || chartData.points.length === 0) {
-    return (
-      <div className="gt-chart-empty" ref={containerRef}>
-        <span>Add progress entries to see the chart</span>
-      </div>
-    );
+  if (!chart) {
+    return <div className="gt-chart-empty"><span>Add progress entries to see the chart</span></div>;
   }
 
-  const { points, linePath, areaPath, gridLines, xLabels, targetStartY, targetEndY, todayX, hasTarget } = chartData;
-  const color = goal.color || '#32769B';
+  const { pts, line, area, yGrid, xLabels, tgtY0, tgtY1, todayX, hasTarget } = chart;
 
   return (
-    <div className="gt-chart" ref={containerRef}>
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-        {/* Grid lines */}
-        {gridLines.map((g, i) => (
+    <div className="gt-chart">
+      <svg viewBox={`0 0 ${VW} ${VH}`} className="gt-chart-svg">
+        {/* Grid */}
+        {yGrid.map((g, i) => (
           <g key={i}>
-            <line x1={PAD.left} y1={g.y} x2={W - PAD.right} y2={g.y}
-              stroke="var(--gt-border)" strokeWidth="1" opacity="0.4" />
-            <text x={PAD.left - 6} y={g.y + 4} textAnchor="end"
-              fill="var(--gt-muted)" fontSize="10" fontFamily="inherit">{g.label}</text>
+            <line x1={PAD.left} y1={g.y} x2={VW - PAD.right} y2={g.y} stroke="#ffffff" strokeWidth="1" opacity="0.06" />
+            <text x={PAD.left - 8} y={g.y + 4} textAnchor="end" fill="#888" fontSize="12" fontFamily="sans-serif">{g.label}</text>
           </g>
         ))}
-
-        {/* X-axis labels */}
         {xLabels.map((l, i) => (
-          <text key={i} x={l.x} y={H - 8} textAnchor="middle"
-            fill="var(--gt-muted)" fontSize="10" fontFamily="inherit">{l.label}</text>
+          <text key={i} x={l.x} y={VH - 10} textAnchor="middle" fill="#888" fontSize="12" fontFamily="sans-serif">{l.label}</text>
         ))}
 
         {/* Target line */}
         {hasTarget && (
-          <line x1={PAD.left} y1={targetStartY} x2={W - PAD.right} y2={targetEndY}
-            stroke="var(--gt-muted)" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
+          <line x1={PAD.left} y1={tgtY0} x2={VW - PAD.right} y2={tgtY1}
+            stroke="#888" strokeWidth="1.5" strokeDasharray="8,6" opacity="0.3" />
         )}
 
-        {/* Filled area */}
-        {areaPath && <path d={areaPath} fill={hexToRgba(color, 0.1)} />}
+        {/* Area + line */}
+        {area && <path d={area} fill={hexToRgba(color, 0.1)} />}
+        {line && <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />}
 
-        {/* Progress line */}
-        {linePath && (
-          <path d={linePath} fill="none" stroke={color} strokeWidth="2"
-            strokeLinejoin="round" strokeLinecap="round" />
+        {/* Today */}
+        {todayX > PAD.left && todayX < VW - PAD.right && (
+          <line x1={todayX} y1={PAD.top} x2={todayX} y2={PAD.top + IH}
+            stroke="#ef4444" strokeWidth="1.5" strokeDasharray="6,4" opacity="0.5" />
         )}
 
-        {/* Today marker */}
-        {todayX > PAD.left && todayX < W - PAD.right && (
-          <line x1={todayX} y1={PAD.top} x2={todayX} y2={PAD.top + innerH}
-            stroke="var(--gt-danger)" strokeWidth="1" strokeDasharray="4,4" opacity="0.5" />
-        )}
-
-        {/* Data points */}
-        {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y}
-            r={hoveredIdx === i ? 6 : 4}
-            fill={hoveredIdx === i ? '#fff' : color}
-            stroke={color} strokeWidth="2"
-            style={{ cursor: 'pointer', transition: 'r 0.15s' }}
-            onMouseEnter={() => setHoveredIdx(i)}
-            onMouseLeave={() => setHoveredIdx(null)}
-          />
+        {/* Points */}
+        {pts.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={hovered === i ? 7 : 5}
+            fill={hovered === i ? '#fff' : color} stroke={color} strokeWidth="2.5"
+            style={{ cursor: 'pointer' }}
+            onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} />
         ))}
-      </svg>
 
-      {/* Tooltip */}
-      {hoveredIdx !== null && points[hoveredIdx] && (
-        <div className="gt-chart-tooltip" style={{
-          left: points[hoveredIdx].x,
-          top: points[hoveredIdx].y - 10,
-        }}>
-          <strong>{points[hoveredIdx].value}{goal.trackingType === 'percentage' ? '%' : ` ${goal.unit || ''}`}</strong>
-          <span>{points[hoveredIdx].date}</span>
-          {points[hoveredIdx].note && <em>{points[hoveredIdx].note}</em>}
-        </div>
-      )}
+        {/* Tooltip */}
+        {hovered !== null && pts[hovered] && (
+          <g>
+            <rect x={pts[hovered].x - 50} y={pts[hovered].y - 38} width="100" height="28" rx="6"
+              fill="#1a1a1f" stroke="#333" strokeWidth="1" />
+            <text x={pts[hovered].x} y={pts[hovered].y - 20} textAnchor="middle"
+              fill="#fff" fontSize="13" fontWeight="600" fontFamily="sans-serif">
+              {pts[hovered].value}{goal.trackingType === 'percentage' ? '%' : ` ${goal.unit || ''}`}
+            </text>
+          </g>
+        )}
+      </svg>
     </div>
   );
 }
