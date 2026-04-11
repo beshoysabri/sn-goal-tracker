@@ -1,7 +1,7 @@
 {
   "name": "sn-goal-tracker",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "A goal tracker editor for Standard Notes with list, timeline, and board views",
   "repository": {
