@@ -2527,6 +2527,19 @@ body.sn-embedded {
   .gt-insight-card { padding: 6px 10px; }
 }
 
+/* Clickable links */
+.gt-link {
+  color: var(--gt-accent);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color var(--gt-transition);
+}
+
+.gt-link:hover {
+  color: var(--gt-fg);
+  text-decoration: underline;
+}
+
 /* Small button variant */
 .btn-sm { padding: 5px 10px; font-size: 11px; }
 

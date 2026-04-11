@@ -9,6 +9,7 @@ import { ProgressCircle } from './shared/ProgressCircle.tsx';
 import { ProgressChart } from './shared/ProgressChart.tsx';
 import { PriorityBadge } from './shared/PriorityBadge.tsx';
 import { hexToRgba } from '../lib/colors.ts';
+import { Linkify } from './shared/Linkify.tsx';
 
 interface GoalDetailProps {
   goal: Goal;
@@ -157,7 +158,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
                 </span>
               )}
             </div>
-            {goal.description && <p className="gt-detail-hero-desc">{goal.description}</p>}
+            {goal.description && <p className="gt-detail-hero-desc"><Linkify>{goal.description}</Linkify></p>}
           </div>
         </div>
         <div className="gt-detail-hero-right">
@@ -306,7 +307,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
               {goal.tasks.sort((a, b) => a.sortOrder - b.sortOrder).map(task => (
                 <label key={task.id} className={`gt-detail-task ${task.completed ? 'done' : ''}`}>
                   <input type="checkbox" checked={task.completed} onChange={() => handleToggleTask(task.id)} />
-                  <span className="gt-detail-task-text">{task.title}</span>
+                  <span className="gt-detail-task-text"><Linkify>{task.title}</Linkify></span>
                   <button className="gt-detail-task-x" onClick={(e) => { e.preventDefault(); handleDeleteTask(task.id); }} title="Remove">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                   </button>
@@ -382,7 +383,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
             ) : (
               <div className="gt-detail-notes-content" onClick={() => { setNotesValue(goal.notes || ''); setEditingNotes(true); }}>
                 {goal.notes ? (
-                  goal.notes.split('\n').map((line, i) => <p key={i}>{line || '\u00A0'}</p>)
+                  goal.notes.split('\n').map((line, i) => <p key={i}>{line ? <Linkify>{line}</Linkify> : '\u00A0'}</p>)
                 ) : (
                   <p className="gt-detail-notes-placeholder">Click to add notes, plans, or reflections...</p>
                 )}
@@ -404,7 +405,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
                       <span className="gt-detail-history-val">
                         {goal.trackingType === 'percentage' ? `${entry.value}%` : `${entry.value} ${goal.unit || ''}`}
                       </span>
-                      {entry.note && <span className="gt-detail-history-note">{entry.note}</span>}
+                      {entry.note && <span className="gt-detail-history-note"><Linkify>{entry.note}</Linkify></span>}
                       <button
                         className="gt-detail-history-delete"
                         onClick={() => {
