@@ -155,22 +155,35 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
 
   const todayX = dateToX(toDateStr(new Date()));
 
+  // All non-archived goals for finding children
+  const allGoals = useMemo(() => data.goals.filter(g => !g.archived), [data.goals]);
+  const getChildren = (parentId: string) => allGoals.filter(g => g.parentGoalId === parentId).sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // Only top-level goals in filteredGoals
+  const topLevelGoals = useMemo(() => filteredGoals.filter(g => !g.parentGoalId), [filteredGoals]);
+
   const rows: Row[] = useMemo(() => {
     const result: Row[] = [];
     const sortedAreas = [...data.lifeAreas].sort((a, b) => a.sortOrder - b.sortOrder);
+    const addGoalAndChildren = (g: Goal) => {
+      result.push({ goal: g });
+      for (const child of getChildren(g.id)) {
+        if (child.startDate || child.targetDate) result.push({ goal: child });
+      }
+    };
     for (const area of sortedAreas) {
-      const areaGoals = filteredGoals.filter(g => g.lifeAreaId === area.id).sort((a, b) => a.sortOrder - b.sortOrder);
+      const areaGoals = topLevelGoals.filter(g => g.lifeAreaId === area.id).sort((a, b) => a.sortOrder - b.sortOrder);
       if (areaGoals.length === 0) continue;
       result.push({ isGroupHeader: true, areaName: area.name, areaColor: area.color });
-      for (const g of areaGoals) result.push({ goal: g });
+      for (const g of areaGoals) addGoalAndChildren(g);
     }
-    const ungrouped = filteredGoals.filter(g => !g.lifeAreaId).sort((a, b) => a.sortOrder - b.sortOrder);
+    const ungrouped = topLevelGoals.filter(g => !g.lifeAreaId).sort((a, b) => a.sortOrder - b.sortOrder);
     if (ungrouped.length > 0) {
       result.push({ isGroupHeader: true, areaName: 'Ungrouped' });
-      for (const g of ungrouped) result.push({ goal: g });
+      for (const g of ungrouped) addGoalAndChildren(g);
     }
     return result;
-  }, [filteredGoals, data.lifeAreas]);
+  }, [topLevelGoals, data.lifeAreas, allGoals]);
 
   // Mobile card
   const renderMobileCard = (goal: Goal) => {
@@ -231,8 +244,9 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
                 </div>
               );
             }
+            const isSub = !!row.goal.parentGoalId;
             return (
-              <div key={row.goal.id} className="gt-timeline-label" onClick={() => onSelectGoal(row.goal.id)}>
+              <div key={row.goal.id} className={`gt-timeline-label ${isSub ? 'gt-timeline-label-sub' : ''}`} onClick={() => onSelectGoal(row.goal.id)}>
                 <span className="gt-timeline-label-dot" style={{ background: row.goal.color }} />
                 <span className="gt-timeline-label-name">{row.goal.name}</span>
               </div>

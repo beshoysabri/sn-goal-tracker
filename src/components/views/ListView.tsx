@@ -55,18 +55,28 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
     }
   };
 
-  // Filter goals
-  const filteredGoals = useMemo(() => data.goals.filter(g => {
-    if (g.archived) return false;
+  // All non-archived goals for finding children
+  const allGoals = useMemo(() => data.goals.filter(g => !g.archived), [data.goals]);
+
+  // Filter top-level goals only
+  const filteredTopLevel = useMemo(() => allGoals.filter(g => {
+    if (g.parentGoalId) return false; // only top-level in main filter
     if (statusTab === 'active' && (g.status === 'completed' || g.status === 'abandoned')) return false;
     if (statusTab === 'completed' && g.status !== 'completed') return false;
     if (filterAreaId && g.lifeAreaId !== filterAreaId) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      return g.name.toLowerCase().includes(q) || g.description.toLowerCase().includes(q);
+      // Also match if any child matches
+      const childMatch = allGoals.some(c => c.parentGoalId === g.id &&
+        (c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)));
+      return g.name.toLowerCase().includes(q) || g.description.toLowerCase().includes(q) || childMatch;
     }
     return true;
-  }), [data.goals, statusTab, searchQuery, filterAreaId]);
+  }), [allGoals, statusTab, searchQuery, filterAreaId]);
+
+  // Get children of a goal from ALL goals (not filtered)
+  const getChildren = (parentId: string) =>
+    allGoals.filter(g => g.parentGoalId === parentId).sort((a, b) => a.sortOrder - b.sortOrder);
 
   const sortedAreas = [...data.lifeAreas].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -96,43 +106,48 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
     const completion = getGoalCompletion(goal);
     const timeLeft = goal.targetDate ? getTimeRemaining(goal) : null;
     const tasks = getTasksLabel(goal);
+    const children = getChildren(goal.id);
 
     return (
-      <div
-        key={goal.id}
-        className={`gt-list-row ${isSubGoal ? 'subgoal' : ''} ${goal.status === 'completed' ? 'completed' : ''}`}
-        onClick={() => onSelectGoal(goal.id)}
-      >
-        <div className="gt-list-name">
-          <span className="gt-list-name-icon" style={{ color: goal.color }}>
-            <GoalIcon name={goal.icon} size={16} />
-          </span>
-          <span className="gt-list-name-text">{goal.name}</span>
-          {goal.priority !== 'medium' && <PriorityBadge priority={goal.priority} />}
-          {goal.status === 'paused' && <span className="status-badge status-paused">Paused</span>}
-          {goal.status === 'active' && completion < 100 && (
-            <button
-              className="gt-list-quick-complete"
-              onClick={(e) => { e.stopPropagation(); onQuickComplete(goal.id); }}
-              title="Mark as completed"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-            </button>
-          )}
-        </div>
-        <div className="gt-list-date">
-          {goal.startDate ? formatDateShort(goal.startDate) : '-'}
-        </div>
-        <div className={`gt-list-time-left ${timeLeft?.overdue ? 'overdue' : ''}`}>
-          {timeLeft ? timeLeft.label : 'No date'}
-        </div>
-        <div className="gt-list-progress">
-          <div className="gt-list-progress-track">
-            <div className="gt-list-progress-bar" style={{ width: `${completion}%`, background: goal.color }} />
+      <div key={goal.id}>
+        <div
+          className={`gt-list-row ${isSubGoal ? 'subgoal' : ''} ${goal.status === 'completed' ? 'completed' : ''}`}
+          onClick={() => onSelectGoal(goal.id)}
+        >
+          <div className="gt-list-name">
+            {isSubGoal && <span className="gt-list-subgoal-line" />}
+            <span className="gt-list-name-icon" style={{ color: goal.color }}>
+              <GoalIcon name={goal.icon} size={isSubGoal ? 14 : 16} />
+            </span>
+            <span className="gt-list-name-text">{goal.name}</span>
+            {goal.priority !== 'medium' && <PriorityBadge priority={goal.priority} />}
+            {goal.status === 'paused' && <span className="status-badge status-paused">Paused</span>}
+            {goal.status === 'active' && completion < 100 && !isSubGoal && (
+              <button
+                className="gt-list-quick-complete"
+                onClick={(e) => { e.stopPropagation(); onQuickComplete(goal.id); }}
+                title="Mark as completed"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </button>
+            )}
           </div>
-          <span className="gt-list-progress-value">{completion}%</span>
+          <div className="gt-list-date">
+            {goal.startDate ? formatDateShort(goal.startDate) : '-'}
+          </div>
+          <div className={`gt-list-time-left ${timeLeft?.overdue ? 'overdue' : ''}`}>
+            {timeLeft ? timeLeft.label : 'No date'}
+          </div>
+          <div className="gt-list-progress">
+            <div className="gt-list-progress-track">
+              <div className="gt-list-progress-bar" style={{ width: `${completion}%`, background: goal.color }} />
+            </div>
+            <span className="gt-list-progress-value">{completion}%</span>
+          </div>
+          <div className="gt-list-tasks">{tasks}</div>
         </div>
-        <div className="gt-list-tasks">{tasks}</div>
+        {/* Render children inline */}
+        {children.length > 0 && children.map(child => renderGoalRow(child, true))}
       </div>
     );
   };
@@ -141,9 +156,7 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
     if (goals.length === 0) return null;
     const isCollapsed = collapsed[key];
     const areaStats = area ? getLifeAreaStats(data, area) : null;
-
-    const topLevel = sortGoals(goals.filter(g => !g.parentGoalId));
-    const getChildren = (parentId: string) => goals.filter(g => g.parentGoalId === parentId);
+    const topLevel = sortGoals(goals);
 
     return (
       <div key={key} className="gt-list-group">
@@ -168,19 +181,14 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
         </div>
         {!isCollapsed && (
           <div className="gt-list-rows">
-            {topLevel.map(goal => (
-              <div key={goal.id}>
-                {renderGoalRow(goal)}
-                {getChildren(goal.id).map(sub => renderGoalRow(sub, true))}
-              </div>
-            ))}
+            {topLevel.map(goal => renderGoalRow(goal))}
           </div>
         )}
       </div>
     );
   };
 
-  if (filteredGoals.length === 0) {
+  if (filteredTopLevel.length === 0) {
     return (
       <div className="gt-list-empty">
         <div className="gt-list-empty-icon">
@@ -217,29 +225,19 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
       </div>
 
       {filterAreaId ? (
-        // When filtering by area, don't group — show flat sorted list
         <div className="gt-list-rows">
-          {sortGoals(filteredGoals.filter(g => !g.parentGoalId)).map(goal => (
-            <div key={goal.id}>
-              {renderGoalRow(goal)}
-              {filteredGoals.filter(g => g.parentGoalId === goal.id).map(sub => renderGoalRow(sub, true))}
-            </div>
-          ))}
+          {sortGoals(filteredTopLevel).map(goal => renderGoalRow(goal))}
         </div>
       ) : (
         <>
           {sortedAreas.map(area => {
-            const areaGoals = filteredGoals
-              .filter(g => g.lifeAreaId === area.id)
-              .sort((a, b) => a.sortOrder - b.sortOrder);
+            const areaGoals = filteredTopLevel.filter(g => g.lifeAreaId === area.id);
             return renderAreaGroup(area, areaGoals, area.id);
           })}
 
           {renderAreaGroup(
             null,
-            filteredGoals
-              .filter(g => !g.lifeAreaId || !data.lifeAreas.some(a => a.id === g.lifeAreaId))
-              .sort((a, b) => a.sortOrder - b.sortOrder),
+            filteredTopLevel.filter(g => !g.lifeAreaId || !data.lifeAreas.some(a => a.id === g.lifeAreaId)),
             '__ungrouped'
           )}
         </>

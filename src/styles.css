@@ -909,11 +909,31 @@ body.sn-embedded {
 }
 
 .gt-list-row.subgoal {
-  padding-left: 36px;
+  padding-left: 40px;
+  background: color-mix(in srgb, var(--gt-card-hover) 40%, transparent);
 }
 
 .gt-list-row.subgoal .gt-list-name {
   font-size: 12px;
+}
+
+.gt-list-subgoal-line {
+  display: inline-block;
+  width: 10px;
+  height: 1px;
+  background: var(--gt-border);
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+/* Timeline sub-goal indentation */
+.gt-timeline-label-sub {
+  padding-left: 24px;
+}
+
+.gt-timeline-label-sub .gt-timeline-label-name {
+  font-size: 11px;
+  opacity: 0.8;
 }
 
 .gt-list-name {
@@ -2952,23 +2972,26 @@ body.sn-embedded {
 .gt-list-sort-arrow { font-size: 10px; }
 
 /* Quick complete button on list row hover */
+/* Quick complete — subtle pill button that appears on hover */
 .gt-list-quick-complete {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--gt-success);
+  padding: 2px 8px;
+  border: 1px solid var(--gt-border);
   background: transparent;
-  color: var(--gt-success);
-  border-radius: 50%;
+  color: var(--gt-muted);
+  border-radius: 10px;
   cursor: pointer;
   flex-shrink: 0;
+  font-size: 10px;
+  font-family: inherit;
+  gap: 3px;
   transition: all var(--gt-transition);
 }
 
 .gt-list-row:hover .gt-list-quick-complete { display: flex; }
-.gt-list-quick-complete:hover { background: var(--gt-success); color: #fff; }
+.gt-list-quick-complete:hover { border-color: var(--gt-success); color: var(--gt-success); background: color-mix(in srgb, var(--gt-success) 8%, transparent); }
 
 /* Empty state suggestions */
 .gt-list-suggestions {
