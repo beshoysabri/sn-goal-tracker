@@ -81,28 +81,19 @@ export function getGoalCompletion(goal: Goal): number {
   }
 }
 
-/** Auto-update goal status based on completion percentage */
+/** Auto-complete goal when progress reaches 100%.
+ *  Only auto-COMPLETES, never auto-reverts.
+ *  Manual status changes (completed, paused, abandoned) are always respected. */
 export function autoUpdateStatus(goal: Goal): Goal {
   const completion = getGoalCompletion(goal);
   const now = new Date().toISOString();
 
-  // Don't auto-change if manually set to paused or abandoned
-  if (goal.status === 'paused' || goal.status === 'abandoned') return goal;
-
-  if (completion >= 100 && goal.status !== 'completed') {
+  // Only auto-complete active goals when they hit 100%
+  if (completion >= 100 && goal.status === 'active') {
     return {
       ...goal,
       status: 'completed',
       completedDate: goal.completedDate || now.slice(0, 10),
-      updatedAt: now,
-    };
-  }
-
-  if (completion < 100 && goal.status === 'completed') {
-    return {
-      ...goal,
-      status: 'active',
-      completedDate: undefined,
       updatedAt: now,
     };
   }
