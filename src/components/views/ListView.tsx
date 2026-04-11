@@ -149,12 +149,7 @@ export function ListView({ data, statusTab, searchQuery, filterAreaId, onSelectG
       <div key={key} className="gt-list-group">
         <div className="gt-list-group-header" onClick={() => toggleCollapse(key)}>
           {area && (
-            <>
-              <span className="gt-list-group-dot" style={{ background: area.color }} />
-              <span className="gt-list-group-icon" style={{ color: area.color }}>
-                <GoalIcon name={area.icon} size={16} />
-              </span>
-            </>
+            <span className="gt-list-group-dot" style={{ background: area.color }} />
           )}
           <span className="gt-list-group-name">{area?.name || 'Ungrouped'}</span>
           {areaStats && (

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { Modal } from './shared/Modal.tsx';
 import { ColorPicker } from './shared/ColorPicker.tsx';
-import { IconPicker } from './shared/IconPicker.tsx';
 import { DEFAULT_GOAL_COLOR } from '../lib/colors.ts';
 import type { LifeArea } from '../types/goal.ts';
 
@@ -17,9 +16,7 @@ export function LifeAreaModal({ lifeArea, onSave, onDelete, onClose }: LifeAreaM
   const isEdit = !!lifeArea;
 
   const [name, setName] = useState(lifeArea?.name || '');
-  const [icon, setIcon] = useState(lifeArea?.icon || 'target');
   const [color, setColor] = useState(lifeArea?.color || DEFAULT_GOAL_COLOR);
-  const [showIconPicker, setShowIconPicker] = useState(false);
 
   const canSave = name.trim().length > 0;
 
@@ -28,7 +25,7 @@ export function LifeAreaModal({ lifeArea, onSave, onDelete, onClose }: LifeAreaM
     onSave({
       id: lifeArea?.id || uuid(),
       name: name.trim(),
-      icon,
+      icon: lifeArea?.icon || 'target',
       color,
       sortOrder: lifeArea?.sortOrder ?? Date.now(),
     });
@@ -66,33 +63,10 @@ export function LifeAreaModal({ lifeArea, onSave, onDelete, onClose }: LifeAreaM
         />
       </div>
 
-      <div className="form-row">
-        <div className="form-group form-group-half">
-          <label>Icon</label>
-          <button
-            type="button"
-            className="form-icon-btn"
-            onClick={() => setShowIconPicker(!showIconPicker)}
-          >
-            <span style={{ color }}><GoalIconInline name={icon} /></span>
-            <span className="form-icon-label">Change</span>
-          </button>
-          {showIconPicker && (
-            <div className="form-icon-picker-dropdown">
-              <IconPicker value={icon} onChange={(v) => { setIcon(v); setShowIconPicker(false); }} />
-            </div>
-          )}
-        </div>
-        <div className="form-group form-group-half">
-          <label>Color</label>
-          <ColorPicker value={color} onChange={setColor} />
-        </div>
+      <div className="form-group">
+        <label>Color</label>
+        <ColorPicker value={color} onChange={setColor} />
       </div>
     </Modal>
   );
-}
-
-import { GoalIcon as GoalIconComponent } from '../lib/icons.tsx';
-function GoalIconInline({ name }: { name: string }) {
-  return <GoalIconComponent name={name} size={20} />;
 }

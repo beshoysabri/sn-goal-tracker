@@ -51,7 +51,6 @@ export function Setup({ onConfirm }: SetupProps) {
                 className="gt-setup-area-dot"
                 style={{ background: area.color }}
               />
-              <GoalIcon name={area.icon} size={16} />
               <span className="gt-setup-area-name">{area.name}</span>
             </label>
           ))}

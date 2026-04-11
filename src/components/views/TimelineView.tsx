@@ -16,7 +16,7 @@ interface TimelineViewProps {
 }
 
 interface GoalRow { goal: Goal; isGroupHeader?: false; }
-interface GroupHeaderRow { isGroupHeader: true; areaName: string; areaColor?: string; areaIcon?: string; }
+interface GroupHeaderRow { isGroupHeader: true; areaName: string; areaColor?: string; }
 type Row = GoalRow | GroupHeaderRow;
 
 // Each header cell
@@ -161,7 +161,7 @@ export function TimelineView({ data, statusTab, searchQuery, timeScale, onTimeSc
     for (const area of sortedAreas) {
       const areaGoals = filteredGoals.filter(g => g.lifeAreaId === area.id).sort((a, b) => a.sortOrder - b.sortOrder);
       if (areaGoals.length === 0) continue;
-      result.push({ isGroupHeader: true, areaName: area.name, areaColor: area.color, areaIcon: area.icon });
+      result.push({ isGroupHeader: true, areaName: area.name, areaColor: area.color });
       for (const g of areaGoals) result.push({ goal: g });
     }
     const ungrouped = filteredGoals.filter(g => !g.lifeAreaId).sort((a, b) => a.sortOrder - b.sortOrder);

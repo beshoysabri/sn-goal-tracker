@@ -138,7 +138,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
             <div className="gt-detail-hero-meta">
               {lifeArea && (
                 <span className="gt-detail-tag" style={{ background: hexToRgba(lifeArea.color, 0.12), color: lifeArea.color }}>
-                  <GoalIcon name={lifeArea.icon} size={11} /> {lifeArea.name}
+                  {lifeArea.name}
                 </span>
               )}
               <PriorityBadge priority={goal.priority} />
