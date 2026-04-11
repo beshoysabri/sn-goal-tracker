@@ -122,6 +122,24 @@ export function BoardView({ data, statusTab, searchQuery, onSelectGoal, onUpdate
             </span>
           )}
         </div>
+        {/* Sub-goals nested */}
+        {renderSubGoals(goal.id)}
+      </div>
+    );
+  };
+
+  const renderSubGoals = (parentId: string) => {
+    const subs = data.goals.filter(g => g.parentGoalId === parentId && !g.archived);
+    if (subs.length === 0) return null;
+    return (
+      <div className="gt-board-subgoals">
+        {subs.map(sg => (
+          <div key={sg.id} className="gt-board-subgoal" onClick={(e) => { e.stopPropagation(); onSelectGoal(sg.id); }}>
+            <span style={{ color: sg.color }}><GoalIcon name={sg.icon} size={12} /></span>
+            <span className="gt-board-subgoal-name">{sg.name}</span>
+            <span className="gt-board-subgoal-pct">{getGoalCompletion(sg)}%</span>
+          </div>
+        ))}
       </div>
     );
   };

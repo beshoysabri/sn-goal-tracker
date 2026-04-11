@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import type { GoalTrackerData, Goal, LifeArea, ViewType, StatusTab, TimeScale, GoalStatus } from '../types/goal.ts';
 import { todayStr } from '../lib/calendar.ts';
@@ -43,6 +43,9 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
 
   // Help
   const [showShortcuts, setShowShortcuts] = useState(false);
+
+  // Sub-goal creation context
+  const pendingParentRef = useRef<{ id: string; lifeAreaId?: string } | null>(null);
 
   // Confirm dialogs
   const [confirmDeleteGoal, setConfirmDeleteGoal] = useState<string | null>(null);
@@ -292,6 +295,14 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           onDelete={() => setConfirmDeleteGoal(selectedGoal.id)}
           onArchive={() => handleArchiveGoal(selectedGoal.id)}
           onUpdateGoal={handleUpdateGoal}
+          onNavigateGoal={handleOpenGoalDetail}
+          onAddSubGoal={(parentId) => {
+            const parent = data.goals.find(g => g.id === parentId);
+            setEditingGoal(undefined);
+            setShowGoalModal(true);
+            // Store parent info for pre-fill — we'll use a ref
+            pendingParentRef.current = { id: parentId, lifeAreaId: parent?.lifeAreaId };
+          }}
         />
       );
     }
@@ -384,8 +395,10 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
           goal={editingGoal}
           lifeAreas={data.lifeAreas}
           goals={data.goals}
-          onSave={handleSaveGoal}
-          onClose={() => { setShowGoalModal(false); setEditingGoal(undefined); }}
+          defaultParentGoalId={pendingParentRef.current?.id}
+          defaultLifeAreaId={pendingParentRef.current?.lifeAreaId}
+          onSave={(g) => { handleSaveGoal(g); pendingParentRef.current = null; }}
+          onClose={() => { setShowGoalModal(false); setEditingGoal(undefined); pendingParentRef.current = null; }}
         />
       )}
 

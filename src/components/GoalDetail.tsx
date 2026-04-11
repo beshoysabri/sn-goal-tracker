@@ -18,6 +18,8 @@ interface GoalDetailProps {
   onArchive: () => void;
   onDuplicate: () => void;
   onUpdateGoal: (updated: Goal) => void;
+  onNavigateGoal: (goalId: string) => void;
+  onAddSubGoal: (parentGoalId: string) => void;
 }
 
 const STATUS_OPTIONS: { value: GoalStatus; label: string; color: string }[] = [
@@ -27,7 +29,7 @@ const STATUS_OPTIONS: { value: GoalStatus; label: string; color: string }[] = [
   { value: 'abandoned', label: 'Abandoned', color: 'var(--gt-muted)' },
 ];
 
-export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, onDuplicate, onUpdateGoal }: GoalDetailProps) {
+export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, onDuplicate, onUpdateGoal, onNavigateGoal, onAddSubGoal }: GoalDetailProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [progressInput, setProgressInput] = useState('');
   const [progressNote, setProgressNote] = useState('');
@@ -145,7 +147,11 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
               <span className={`gt-detail-status-pill ${goal.status}`}>
                 {STATUS_OPTIONS.find(s => s.value === goal.status)?.label}
               </span>
-              {parentGoal && <span className="gt-detail-tag muted">Sub-goal of {parentGoal.name}</span>}
+              {parentGoal && (
+                <span className="gt-detail-tag muted clickable" onClick={() => onNavigateGoal(parentGoal.id)}>
+                  &larr; {parentGoal.name}
+                </span>
+              )}
             </div>
             {goal.description && <p className="gt-detail-hero-desc">{goal.description}</p>}
           </div>
@@ -285,21 +291,29 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
           </div>
 
           {/* Sub-goals */}
-          {subGoals.length > 0 && (
-            <div className="gt-detail-section">
-              <div className="gt-detail-section-header"><h3>Sub-goals</h3></div>
-              {subGoals.map(sg => (
-                <div key={sg.id} className="gt-detail-subgoal">
+          <div className="gt-detail-section">
+            <div className="gt-detail-section-header">
+              <h3>Sub-goals</h3>
+              <button className="gt-detail-section-action" onClick={() => onAddSubGoal(goal.id)}>
+                + Add
+              </button>
+            </div>
+            {subGoals.length > 0 ? (
+              subGoals.map(sg => (
+                <div key={sg.id} className="gt-detail-subgoal clickable" onClick={() => onNavigateGoal(sg.id)}>
                   <span style={{ color: sg.color }}><GoalIcon name={sg.icon} size={14} /></span>
                   <span className="gt-detail-subgoal-name">{sg.name}</span>
                   <div className="gt-detail-subgoal-bar">
                     <div style={{ width: `${getGoalCompletion(sg)}%`, background: sg.color }} />
                   </div>
                   <span className="gt-detail-subgoal-pct">{getGoalCompletion(sg)}%</span>
+                  <span className="gt-detail-subgoal-arrow">&rsaquo;</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <p className="gt-detail-empty-hint">Break this goal into smaller sub-goals</p>
+            )}
+          </div>
         </div>
 
         {/* Right column: Notes + History */}

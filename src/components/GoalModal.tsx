@@ -12,19 +12,21 @@ interface GoalModalProps {
   goal?: Goal;
   lifeAreas: LifeArea[];
   goals: Goal[];
+  defaultParentGoalId?: string;
+  defaultLifeAreaId?: string;
   onSave: (goal: Goal) => void;
   onClose: () => void;
 }
 
-export function GoalModal({ goal, lifeAreas, goals, onSave, onClose }: GoalModalProps) {
+export function GoalModal({ goal, lifeAreas, goals, defaultParentGoalId, defaultLifeAreaId, onSave, onClose }: GoalModalProps) {
   const isEdit = !!goal;
 
   const [name, setName] = useState(goal?.name || '');
   const [description, setDescription] = useState(goal?.description || '');
   const [icon, setIcon] = useState(goal?.icon || DEFAULT_ICON);
   const [color, setColor] = useState(goal?.color || DEFAULT_GOAL_COLOR);
-  const [lifeAreaId, setLifeAreaId] = useState(goal?.lifeAreaId || '');
-  const [parentGoalId, setParentGoalId] = useState(goal?.parentGoalId || '');
+  const [lifeAreaId, setLifeAreaId] = useState(goal?.lifeAreaId || defaultLifeAreaId || '');
+  const [parentGoalId, setParentGoalId] = useState(goal?.parentGoalId || defaultParentGoalId || '');
   const [trackingType, setTrackingType] = useState<TrackingType>(goal?.trackingType || 'checklist');
   const [targetValue, setTargetValue] = useState(goal?.targetValue ?? 100);
   const [unit, setUnit] = useState(goal?.unit || '');

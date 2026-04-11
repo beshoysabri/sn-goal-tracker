@@ -1638,6 +1638,46 @@ body.sn-embedded {
   color: var(--gt-accent);
 }
 
+/* Board sub-goals nested under parent card */
+.gt-board-subgoals {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--gt-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gt-board-subgoal {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: background var(--gt-transition);
+}
+
+.gt-board-subgoal:hover {
+  background: color-mix(in srgb, var(--gt-card-hover) 50%, transparent);
+}
+
+.gt-board-subgoal-name {
+  flex: 1;
+  color: var(--gt-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.gt-board-subgoal-pct {
+  font-weight: 600;
+  color: var(--gt-muted);
+  flex-shrink: 0;
+}
+
 .gt-board-empty {
   padding: 24px 12px;
   text-align: center;
@@ -2040,6 +2080,42 @@ body.sn-embedded {
   color: var(--gt-muted);
   width: 28px;
   text-align: right;
+}
+
+.gt-detail-subgoal-arrow {
+  color: var(--gt-muted);
+  font-size: 16px;
+  font-weight: 300;
+  flex-shrink: 0;
+  transition: color var(--gt-transition);
+}
+
+.gt-detail-subgoal.clickable {
+  cursor: pointer;
+}
+
+.gt-detail-subgoal.clickable:hover {
+  background: var(--gt-card-hover);
+}
+
+.gt-detail-subgoal.clickable:hover .gt-detail-subgoal-arrow {
+  color: var(--gt-accent);
+}
+
+.gt-detail-empty-hint {
+  font-size: 12px;
+  color: var(--gt-muted);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.gt-detail-tag.clickable {
+  cursor: pointer;
+  transition: background var(--gt-transition);
+}
+
+.gt-detail-tag.clickable:hover {
+  background: color-mix(in srgb, var(--gt-accent) 15%, transparent);
 }
 
 /* Notes */
