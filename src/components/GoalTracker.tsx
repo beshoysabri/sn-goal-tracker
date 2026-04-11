@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import type { GoalTrackerData, Goal, LifeArea, ViewType, StatusTab, TimeScale, GoalStatus } from '../types/goal.ts';
-import { todayStr } from '../lib/calendar.ts';
+import { syncGoalProgress } from '../lib/data.ts';
 import { getTrackerStats } from '../lib/stats.ts';
 import { Header } from './Header.tsx';
 import { GoalSidebar } from './GoalSidebar.tsx';
@@ -112,23 +112,14 @@ export function GoalTracker({ data, onChange }: GoalTrackerProps) {
   const handleUpdateStatus = useCallback((goalId: string, status: GoalStatus) => {
     onChange({
       ...data,
-      goals: data.goals.map(g => {
-        if (g.id !== goalId) return g;
-        const updated = { ...g, status, updatedAt: new Date().toISOString() };
-        if (status === 'completed') updated.completedDate = todayStr();
-        else updated.completedDate = undefined;
-        return updated;
-      }),
+      goals: data.goals.map(g => g.id !== goalId ? g : syncGoalProgress(g, status)),
     });
   }, [data, onChange]);
 
   const handleQuickComplete = useCallback((goalId: string) => {
     onChange({
       ...data,
-      goals: data.goals.map(g => {
-        if (g.id !== goalId) return g;
-        return { ...g, status: 'completed' as GoalStatus, completedDate: todayStr(), updatedAt: new Date().toISOString() };
-      }),
+      goals: data.goals.map(g => g.id !== goalId ? g : syncGoalProgress(g, 'completed')),
     });
     showToast('Goal completed!');
   }, [data, onChange, showToast]);

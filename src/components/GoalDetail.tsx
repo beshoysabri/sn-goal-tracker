@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import type { Goal, GoalTrackerData, GoalStatus, GoalTask } from '../types/goal.ts';
 import { GoalIcon } from '../lib/icons.tsx';
-import { getGoalCompletion, autoUpdateStatus } from '../lib/data.ts';
+import { getGoalCompletion, syncGoalProgress } from '../lib/data.ts';
 import { getTimeRemaining, getDaysActive, getProgressVelocity, getProjectedCompletion, getBestProgressDay, getProgressStreak } from '../lib/stats.ts';
 import { todayStr, formatDateShort } from '../lib/calendar.ts';
 import { ProgressCircle } from './shared/ProgressCircle.tsx';
@@ -47,13 +47,10 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
   const doneTasks = goal.tasks.filter(t => t.completed).length;
 
   const handleStatusChange = (status: GoalStatus) => {
-    const updated = { ...goal, status, updatedAt: new Date().toISOString() };
+    const updated = syncGoalProgress(goal, status);
     if (status === 'completed') {
-      updated.completedDate = todayStr();
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2500);
-    } else {
-      updated.completedDate = undefined;
     }
     onUpdateGoal(updated);
   };
@@ -71,12 +68,12 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
       tasks: goal.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t),
       updatedAt: new Date().toISOString(),
     };
-    onUpdateGoal(autoUpdateStatus(updated));
+    onUpdateGoal(syncGoalProgress(updated));
   };
 
   const handleDeleteTask = (taskId: string) => {
     const updated = { ...goal, tasks: goal.tasks.filter(t => t.id !== taskId), updatedAt: new Date().toISOString() };
-    onUpdateGoal(autoUpdateStatus(updated));
+    onUpdateGoal(syncGoalProgress(updated));
   };
 
   const handleSaveNotes = () => {
@@ -103,7 +100,7 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
     } else {
       return;
     }
-    onUpdateGoal(autoUpdateStatus(updated));
+    onUpdateGoal(syncGoalProgress(updated));
     setProgressInput('');
     setProgressNote('');
   };
