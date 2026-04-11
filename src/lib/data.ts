@@ -113,13 +113,13 @@ export function createEmpty(lifeAreas: LifeArea[]): GoalTrackerData {
 }
 
 export const DEFAULT_LIFE_AREAS: Omit<LifeArea, 'id'>[] = [
-  { name: 'Work & Career',          icon: 'briefcase',   color: '#3b82f6', sortOrder: 0 },
-  { name: 'Health & Fitness',        icon: 'heart',       color: '#22c55e', sortOrder: 1 },
-  { name: 'Personal Development',    icon: 'brain',       color: '#a855f7', sortOrder: 2 },
-  { name: 'Education & Learning',    icon: 'graduation',  color: '#6366f1', sortOrder: 3 },
-  { name: 'Finance',                 icon: 'trending-up', color: '#eab308', sortOrder: 4 },
-  { name: 'Relationships',           icon: 'users',       color: '#ec4899', sortOrder: 5 },
-  { name: 'Spirituality & Purpose',  icon: 'sun',         color: '#f97316', sortOrder: 6 },
+  { name: 'Work & Career',          icon: 'briefcase',   color: '#32769B', sortOrder: 0 },
+  { name: 'Health & Fitness',        icon: 'heart',       color: '#8BA47C', sortOrder: 1 },
+  { name: 'Personal Development',    icon: 'brain',       color: '#BBA6DD', sortOrder: 2 },
+  { name: 'Education & Learning',    icon: 'graduation',  color: '#81B2D9', sortOrder: 3 },
+  { name: 'Finance',                 icon: 'trending-up', color: '#F4D35E', sortOrder: 4 },
+  { name: 'Relationships',           icon: 'users',       color: '#E39B99', sortOrder: 5 },
+  { name: 'Spirituality & Purpose',  icon: 'sun',         color: '#FF9C5B', sortOrder: 6 },
 ];
 
 export function createLifeArea(partial: Omit<LifeArea, 'id'>): LifeArea {
