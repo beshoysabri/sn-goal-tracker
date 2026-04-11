@@ -64,6 +64,7 @@ export function GoalModal({ goal, lifeAreas, goals, onSave, onClose }: GoalModal
       startDate: startDate || undefined,
       targetDate: targetDate || undefined,
       completedDate: goal?.completedDate,
+      notes: goal?.notes || '',
       tasks: goal?.tasks || [],
       progressEntries: goal?.progressEntries || [],
       sortOrder: goal?.sortOrder || Date.now(),

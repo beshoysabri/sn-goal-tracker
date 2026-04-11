@@ -47,6 +47,9 @@ export interface Goal {
   // Sub-items
   tasks: GoalTask[];
 
+  // Content
+  notes: string;
+
   // Progress history
   progressEntries: ProgressEntry[];
 
