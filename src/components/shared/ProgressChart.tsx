@@ -91,8 +91,8 @@ export function ProgressChart({ goal }: ProgressChartProps) {
 
   return (
     <div className="gt-chart">
-      <ResponsiveContainer width="100%" height={180}>
-        <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 4, left: -8 }}>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={data} margin={{ top: 20, right: 12, bottom: 4, left: -8 }}>
           <defs>
             <linearGradient id={`grad-${goal.id}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={color} stopOpacity={0.3} />
