@@ -263,25 +263,25 @@ export function GoalDetail({ goal, data, onBack, onEdit, onDelete, onArchive, on
           <div className="gt-detail-insights">
             {velocity && (
               <div className="gt-insight-card">
-                <span className="gt-insight-icon">&#x1F4C8;</span>
+                <span className="gt-insight-icon" style={{ color: goal.color }}><GoalIcon name="trending-up" size={16} /></span>
                 <div><div className="gt-insight-value">{velocity.label}</div><div className="gt-insight-label">Velocity</div></div>
               </div>
             )}
             {projected && (
               <div className="gt-insight-card">
-                <span className="gt-insight-icon">&#x1F3AF;</span>
+                <span className="gt-insight-icon" style={{ color: goal.color }}><GoalIcon name="target" size={16} /></span>
                 <div><div className="gt-insight-value">{projected}</div><div className="gt-insight-label">Est. completion</div></div>
               </div>
             )}
             {bestDay && (
               <div className="gt-insight-card">
-                <span className="gt-insight-icon">&#x2B50;</span>
+                <span className="gt-insight-icon" style={{ color: goal.color }}><GoalIcon name="star" size={16} /></span>
                 <div><div className="gt-insight-value">+{bestDay.increase}</div><div className="gt-insight-label">Best day ({formatDateShort(bestDay.date)})</div></div>
               </div>
             )}
             {streak > 0 && (
               <div className="gt-insight-card">
-                <span className="gt-insight-icon">&#x1F525;</span>
+                <span className="gt-insight-icon" style={{ color: goal.color }}><GoalIcon name="fire" size={16} /></span>
                 <div><div className="gt-insight-value">{streak} day{streak > 1 ? 's' : ''}</div><div className="gt-insight-label">Progress streak</div></div>
               </div>
             )}

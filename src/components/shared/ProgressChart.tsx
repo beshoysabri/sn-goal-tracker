@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { Goal } from '../../types/goal.ts';
 import { fromDateStr, todayStr, getShortMonthName } from '../../lib/calendar.ts';
 import { hexToRgba } from '../../lib/colors.ts';
@@ -7,29 +7,14 @@ interface ProgressChartProps {
   goal: Goal;
 }
 
-// Fixed viewBox — SVG scales uniformly to fit container
-const VW = 800;
-const VH = 220;
-const PAD = { top: 20, right: 20, bottom: 36, left: 56 };
-const IW = VW - PAD.left - PAD.right;
-const IH = VH - PAD.top - PAD.bottom;
-
 export function ProgressChart({ goal }: ProgressChartProps) {
-  const [hovered, setHovered] = useState<number | null>(null);
   const color = goal.color || '#32769B';
 
   const chart = useMemo(() => {
     const entries = [...goal.progressEntries].sort((a, b) => a.date.localeCompare(b.date));
     if (entries.length === 0) return null;
 
-    // Time range
-    const sd = goal.startDate || entries[0].date;
-    const ed = goal.targetDate || todayStr();
-    const t0 = fromDateStr(sd).getTime();
-    const t1 = Math.max(fromDateStr(ed).getTime(), Date.now());
-    const tSpan = Math.max(t1 - t0, 86400000);
-
-    // Value range — auto-fit data
+    // Value range
     const vals = entries.map(e => e.value);
     const tv = goal.trackingType === 'percentage' ? 100 : (goal.targetValue || 0);
     const lo = Math.min(...vals, tv > 0 ? tv : Infinity);
@@ -39,112 +24,158 @@ export function ProgressChart({ goal }: ProgressChartProps) {
     const vMax = goal.trackingType === 'percentage' ? 100 : Math.ceil(hi + pad);
     const vSpan = vMax - vMin || 1;
 
-    const x = (ms: number) => PAD.left + ((ms - t0) / tSpan) * IW;
-    const y = (v: number) => PAD.top + IH - ((v - vMin) / vSpan) * IH;
+    const valToPct = (v: number) => ((v - vMin) / vSpan) * 100;
 
-    // Points
-    const pts = entries.map(e => ({
-      x: x(fromDateStr(e.date).getTime()), y: y(e.value),
-      date: e.date, value: e.value, note: e.note,
+    // Time range
+    const sd = goal.startDate || entries[0].date;
+    const ed = goal.targetDate || todayStr();
+    const t0 = fromDateStr(sd).getTime();
+    const t1 = Math.max(fromDateStr(ed).getTime(), Date.now());
+    const tSpan = Math.max(t1 - t0, 86400000);
+    const timeToPct = (ms: number) => ((ms - t0) / tSpan) * 100;
+
+    // Points as percentages
+    const points = entries.map(e => ({
+      xPct: timeToPct(fromDateStr(e.date).getTime()),
+      yPct: valToPct(e.value),
+      value: e.value,
+      date: e.date,
     }));
 
-    // Line + area paths
-    let line = '';
-    let area = '';
-    if (pts.length >= 2) {
-      line = 'M' + pts.map(p => `${p.x} ${p.y}`).join('L');
-      area = line + `L${pts[pts.length - 1].x} ${PAD.top + IH}L${pts[0].x} ${PAD.top + IH}Z`;
-    }
-
-    // Target line
+    // Target line endpoints (as percentages)
     const hasTarget = tv > 0;
-    const tgtY0 = y(entries[0].value);
-    const tgtY1 = hasTarget ? y(tv) : tgtY0;
+    const tgtStartPct = valToPct(entries[0].value);
+    const tgtEndPct = hasTarget ? valToPct(tv) : tgtStartPct;
 
-    // Today
-    const todayX = x(Date.now());
+    // Today marker
+    const todayPct = timeToPct(Date.now());
 
-    // Y grid (5 lines)
-    const yGrid = Array.from({ length: 5 }, (_, i) => {
+    // Y-axis labels (5)
+    const yLabels = Array.from({ length: 5 }, (_, i) => {
       const frac = i / 4;
       const v = vMin + frac * vSpan;
-      return { y: y(v), label: goal.trackingType === 'percentage' ? `${Math.round(v)}%` : String(Math.round(v)) };
+      return {
+        pct: frac * 100,
+        label: goal.trackingType === 'percentage' ? `${Math.round(v)}%` : String(Math.round(v)),
+      };
     });
 
-    // X labels (months)
+    // X-axis labels
     const startD = fromDateStr(sd);
     const months = Math.max(1, Math.round(tSpan / (30.44 * 86400000)));
     const step = months <= 4 ? 1 : months <= 12 ? 2 : months <= 24 ? 3 : 6;
-    const xLabels: { x: number; label: string }[] = [];
+    const xLabels: { pct: number; label: string }[] = [];
     for (let m = 0; m <= months + step; m += step) {
       const d = new Date(startD.getFullYear(), startD.getMonth() + m, 1);
       if (d.getTime() > t1 + 86400000 * 45) break;
-      const px = x(d.getTime());
-      if (px >= PAD.left && px <= VW - PAD.right) {
+      const pct = timeToPct(d.getTime());
+      if (pct >= 0 && pct <= 100) {
         const yr = d.getFullYear() !== new Date().getFullYear() ? ` '${String(d.getFullYear()).slice(2)}` : '';
-        xLabels.push({ x: px, label: getShortMonthName(d.getMonth()) + yr });
+        xLabels.push({ pct, label: getShortMonthName(d.getMonth()) + yr });
       }
     }
 
-    return { pts, line, area, yGrid, xLabels, tgtY0, tgtY1, todayX, hasTarget };
+    return { points, yLabels, xLabels, todayPct, hasTarget, tgtStartPct, tgtEndPct };
   }, [goal]);
 
   if (!chart) {
     return <div className="gt-chart-empty"><span>Add progress entries to see the chart</span></div>;
   }
 
-  const { pts, line, area, yGrid, xLabels, tgtY0, tgtY1, todayX, hasTarget } = chart;
+  const { points, yLabels, xLabels, todayPct, hasTarget, tgtStartPct, tgtEndPct } = chart;
+
+  // Build CSS line segments between consecutive points
+  const segments: { x1: number; y1: number; x2: number; y2: number }[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    segments.push({
+      x1: points[i].xPct, y1: points[i].yPct,
+      x2: points[i + 1].xPct, y2: points[i + 1].yPct,
+    });
+  }
 
   return (
-    <div className="gt-chart">
-      <svg viewBox={`0 0 ${VW} ${VH}`} className="gt-chart-svg">
-        {/* Grid */}
-        {yGrid.map((g, i) => (
-          <g key={i}>
-            <line x1={PAD.left} y1={g.y} x2={VW - PAD.right} y2={g.y} stroke="#ffffff" strokeWidth="1" opacity="0.06" />
-            <text x={PAD.left - 8} y={g.y + 4} textAnchor="end" fill="#888" fontSize="12" fontFamily="sans-serif">{g.label}</text>
-          </g>
+    <div className="gt-css-chart">
+      {/* Y-axis labels */}
+      <div className="gt-css-chart-yaxis">
+        {yLabels.map((l, i) => (
+          <span key={i} className="gt-css-chart-ylabel" style={{ bottom: `${l.pct}%` }}>{l.label}</span>
         ))}
-        {xLabels.map((l, i) => (
-          <text key={i} x={l.x} y={VH - 10} textAnchor="middle" fill="#888" fontSize="12" fontFamily="sans-serif">{l.label}</text>
+      </div>
+
+      {/* Chart area */}
+      <div className="gt-css-chart-area">
+        {/* Grid lines */}
+        {yLabels.map((l, i) => (
+          <div key={i} className="gt-css-chart-gridline" style={{ bottom: `${l.pct}%` }} />
         ))}
 
         {/* Target line */}
         {hasTarget && (
-          <line x1={PAD.left} y1={tgtY0} x2={VW - PAD.right} y2={tgtY1}
-            stroke="#888" strokeWidth="1.5" strokeDasharray="8,6" opacity="0.3" />
+          <div className="gt-css-chart-target"
+            style={{
+              left: '0%', bottom: `${tgtStartPct}%`,
+              width: '100%',
+              '--tgt-start': `${100 - tgtStartPct}%`,
+              '--tgt-end': `${100 - tgtEndPct}%`,
+            } as React.CSSProperties}
+          />
         )}
 
-        {/* Area + line */}
-        {area && <path d={area} fill={hexToRgba(color, 0.1)} />}
-        {line && <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />}
+        {/* Line segments */}
+        {segments.map((s, i) => {
+          const dx = s.x2 - s.x1;
+          const dy = s.y2 - s.y1;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(-dy, dx) * (180 / Math.PI);
+          return (
+            <div key={i} className="gt-css-chart-line" style={{
+              left: `${s.x1}%`, bottom: `${s.y1}%`,
+              width: `${len}%`,
+              transform: `rotate(${-angle}deg)`,
+              transformOrigin: '0 0',
+              background: color,
+            }} />
+          );
+        })}
 
-        {/* Today */}
-        {todayX > PAD.left && todayX < VW - PAD.right && (
-          <line x1={todayX} y1={PAD.top} x2={todayX} y2={PAD.top + IH}
-            stroke="#ef4444" strokeWidth="1.5" strokeDasharray="6,4" opacity="0.5" />
+        {/* Area fill (simplified: vertical bars per point) */}
+        {points.map((p, i) => {
+          const nextX = i < points.length - 1 ? points[i + 1].xPct : p.xPct + 1;
+          const w = nextX - p.xPct;
+          return (
+            <div key={`a${i}`} className="gt-css-chart-bar" style={{
+              left: `${p.xPct}%`, width: `${Math.max(w, 0.5)}%`,
+              height: `${p.yPct}%`,
+              background: hexToRgba(color, 0.08),
+            }} />
+          );
+        })}
+
+        {/* Today marker */}
+        {todayPct > 0 && todayPct < 100 && (
+          <div className="gt-css-chart-today" style={{ left: `${todayPct}%` }} />
         )}
 
-        {/* Points */}
-        {pts.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={hovered === i ? 7 : 5}
-            fill={hovered === i ? '#fff' : color} stroke={color} strokeWidth="2.5"
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} />
+        {/* Data points */}
+        {points.map((p, i) => (
+          <div key={`p${i}`} className="gt-css-chart-point" style={{
+            left: `${p.xPct}%`, bottom: `${p.yPct}%`,
+            borderColor: color, background: color,
+          }}>
+            <div className="gt-css-chart-tip">
+              {p.value}{goal.trackingType === 'percentage' ? '%' : ` ${goal.unit || ''}`}
+              <small>{p.date}</small>
+            </div>
+          </div>
         ))}
 
-        {/* Tooltip */}
-        {hovered !== null && pts[hovered] && (
-          <g>
-            <rect x={pts[hovered].x - 50} y={pts[hovered].y - 38} width="100" height="28" rx="6"
-              fill="#1a1a1f" stroke="#333" strokeWidth="1" />
-            <text x={pts[hovered].x} y={pts[hovered].y - 20} textAnchor="middle"
-              fill="#fff" fontSize="13" fontWeight="600" fontFamily="sans-serif">
-              {pts[hovered].value}{goal.trackingType === 'percentage' ? '%' : ` ${goal.unit || ''}`}
-            </text>
-          </g>
-        )}
-      </svg>
+        {/* X-axis labels */}
+        <div className="gt-css-chart-xaxis">
+          {xLabels.map((l, i) => (
+            <span key={i} className="gt-css-chart-xlabel" style={{ left: `${l.pct}%` }}>{l.label}</span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
