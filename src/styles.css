@@ -28,7 +28,7 @@
   /* Goal preset colors */
   --gt-color-red: #ef4444;
   --gt-color-orange: #f97316;
-  --gt-color-yellow: #eab308;
+  --gt-color-yellow: #a16207;
   --gt-color-green: #22c55e;
   --gt-color-blue: #3b82f6;
   --gt-color-indigo: #6366f1;
@@ -2925,7 +2925,7 @@ body.sn-embedded {
   cursor: pointer;
   position: relative;
   background: conic-gradient(
-    #ef4444, #f97316, #eab308, #22c55e, #14b8a6, #3b82f6, #a855f7, #ec4899, #ef4444
+    #ef4444, #f97316, #a16207, #22c55e, #14b8a6, #3b82f6, #a855f7, #ec4899, #ef4444
   );
 }
 
