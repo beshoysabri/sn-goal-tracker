@@ -12,18 +12,18 @@
    * so SN's values take precedence when present.
    */
 
-  /* Derived tokens — fallback to dark palette when outside SN */
-  --gt-bg: var(--sn-stylekit-background-color, #1a1a1f);
-  --gt-fg: var(--sn-stylekit-foreground-color, #e4e4e7);
-  --gt-panel-bg: var(--sn-stylekit-contrast-background-color, #1a1a1f);
-  --gt-card-bg: var(--sn-stylekit-background-color, #1a1a1f);
-  --gt-card-hover: var(--sn-stylekit-secondary-background-color, #27272a);
-  --gt-border: var(--sn-stylekit-border-color, #27272a);
+  /* Derived tokens — SN injects theme vars, fallbacks for standalone */
+  --gt-bg: var(--sn-stylekit-background-color, #ffffff);
+  --gt-fg: var(--sn-stylekit-foreground-color, #19191c);
+  --gt-panel-bg: var(--sn-stylekit-contrast-background-color, #f4f4f4);
+  --gt-card-bg: var(--sn-stylekit-background-color, #ffffff);
+  --gt-card-hover: var(--sn-stylekit-secondary-background-color, #e8e8e8);
+  --gt-border: var(--sn-stylekit-border-color, #dfdfe0);
   --gt-accent: var(--sn-stylekit-info-color, #086DD6);
-  --gt-danger: var(--sn-stylekit-danger-color, #ef4444);
-  --gt-success: var(--sn-stylekit-success-color, #22c55e);
-  --gt-warning: var(--sn-stylekit-warning-color, #eab308);
-  --gt-muted: var(--sn-stylekit-secondary-foreground-color, #a1a1aa);
+  --gt-danger: var(--sn-stylekit-danger-color, #f80324);
+  --gt-success: var(--sn-stylekit-success-color, #2b9612);
+  --gt-warning: var(--sn-stylekit-warning-color, #cc8800);
+  --gt-muted: var(--sn-stylekit-secondary-foreground-color, #717178);
 
   /* Goal preset colors */
   --gt-color-red: #ef4444;
@@ -267,7 +267,7 @@ body.sn-embedded {
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-  background: var(--gt-panel-bg);
+  background: var(--gt-bg);
 }
 
 .gt-sidebar-header {
