@@ -19,7 +19,7 @@
   --gt-card-bg: var(--sn-stylekit-background-color, #1a1a1f);
   --gt-card-hover: var(--sn-stylekit-secondary-background-color, #27272a);
   --gt-border: var(--sn-stylekit-border-color, #27272a);
-  --gt-accent: var(--sn-stylekit-info-color, #6366f1);
+  --gt-accent: var(--sn-stylekit-info-color, #086DD6);
   --gt-danger: var(--sn-stylekit-danger-color, #ef4444);
   --gt-success: var(--sn-stylekit-success-color, #22c55e);
   --gt-warning: var(--sn-stylekit-warning-color, #eab308);
@@ -31,7 +31,7 @@
   --gt-color-yellow: #a16207;
   --gt-color-green: #22c55e;
   --gt-color-blue: #3b82f6;
-  --gt-color-indigo: #6366f1;
+  --gt-color-indigo: #086DD6;
   --gt-color-purple: #a855f7;
   --gt-color-pink: #ec4899;
 
