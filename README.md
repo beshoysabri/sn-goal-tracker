@@ -1,12 +1,28 @@
 # Goal Tracker for Standard Notes
 
-**A full-featured goal tracking editor with multiple views, progress analytics, and deep Standard Notes integration.**
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+[![Standard Notes](https://img.shields.io/badge/Standard%20Notes-Plugin-6366f1.svg)](https://standardnotes.com)
 
 Track personal and professional goals across every dimension -- status, priority, deadlines, progress history, sub-tasks, and sub-goals -- all stored securely inside a Standard Notes note.
 
+### Quick Install
+
+Paste this URL in **Standard Notes > Preferences > Advanced Settings > Install Custom Plugin**:
+
 ```
-Install URL: https://beshoysabri.github.io/sn-goal-tracker/ext.json
+https://beshoysabri.github.io/sn-goal-tracker/ext.json
 ```
+
+### Highlights
+
+- **4 Views** — List, Timeline (month/quarter/year/5-year), Board, Insights
+- **Progress Tracking** — Boolean, percentage, numeric, and checklist tracking types
+- **Life Areas** — Organize goals into color-coded categories (Health, Finance, Career, etc.)
+- **Analytics** — Completion rates, velocity analysis, projected completion dates
+- **Sub-Goals** — Full parent-child goal hierarchy with task checklists
+- **Export** — CSV, Markdown, and PDF reports
 
 ---
 
